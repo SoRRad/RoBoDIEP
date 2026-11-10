@@ -203,6 +203,65 @@
         extra || null));
   }
 
+  /* ---- (?) tips: help text shown on hover, keyboard focus, or tap ---- */
+  let tipSeq = 0;
+  let pinnedTip = null;
+
+  function placeTip(wrap) {
+    const btn = wrap.firstChild;
+    const pop = wrap.lastChild;
+    const r = btn.getBoundingClientRect();
+    const w = Math.min(320, window.innerWidth - 24);
+    pop.style.width = w + 'px';
+    const left = Math.max(12, Math.min(r.left + r.width / 2 - w / 2, window.innerWidth - w - 12));
+    pop.style.left = left + 'px';
+    const below = r.bottom + 8;
+    const h0 = pop.offsetHeight;
+    pop.style.top = (below + h0 > window.innerHeight - 8 && r.top - h0 - 8 > 8 ? r.top - h0 - 8 : below) + 'px';
+  }
+
+  function setTip(wrap, open) {
+    const btn = wrap.firstChild;
+    const pop = wrap.lastChild;
+    pop.hidden = !open;
+    btn.setAttribute('aria-expanded', String(open));
+    wrap.classList.toggle('is-open', open);
+    if (open) placeTip(wrap);
+  }
+
+  function closePinned() {
+    if (pinnedTip) { setTip(pinnedTip, false); pinnedTip = null; }
+  }
+
+  /** A small (?) button that reveals `text`. Returns { el, id } (id for aria-describedby). */
+  function tip(text, label) {
+    const id = 'tip-' + (++tipSeq);
+    const btn = h('button', { type: 'button', class: 'tip-btn', 'aria-label': label || 'More information', 'aria-expanded': 'false', 'aria-controls': id }, '?');
+    const pop = h('span', { class: 'tip-pop', id, role: 'tooltip', hidden: true },
+      [].concat(text).map((t) => h('span', { class: 'tip-para' }, t)));
+    const wrap = h('span', { class: 'tip' }, btn, pop);
+    const hoverable = mq('(hover: hover)').matches;
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (pinnedTip === wrap) { closePinned(); return; }
+      closePinned();
+      pinnedTip = wrap;
+      setTip(wrap, true);
+    });
+    if (hoverable) {
+      wrap.addEventListener('mouseenter', () => setTip(wrap, true));
+      wrap.addEventListener('mouseleave', () => { if (pinnedTip !== wrap) setTip(wrap, false); });
+    }
+    btn.addEventListener('focus', () => setTip(wrap, true));
+    btn.addEventListener('blur', () => { if (pinnedTip !== wrap) setTip(wrap, false); });
+    return { el: wrap, id };
+  }
+
+  document.addEventListener('click', (e) => { if (pinnedTip && !pinnedTip.contains(e.target)) closePinned(); });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closePinned(); });
+  window.addEventListener('scroll', () => { if (pinnedTip) placeTip(pinnedTip); }, { passive: true });
+
   function extLink(href, text) {
     return h('a', { href, target: '_blank', rel: 'noopener noreferrer', class: 'ext-link' }, text, icon('external', 'ext-icon'), h('span', { class: 'sr-only' }, ' (opens in a new tab)'));
   }
@@ -503,7 +562,8 @@
    */
   function choiceGroup(cfg) {
     const errId = cfg.name + '-error';
-    const helpId = cfg.help ? cfg.name + '-help' : null;
+    const tipObj = cfg.tip ? tip(cfg.tip) : null;
+    const helpId = tipObj ? tipObj.id : (cfg.help ? cfg.name + '-help' : null);
     const inputs = [];
     const list = h('div', { class: 'choices choices-' + (cfg.variant || 'cards') });
     cfg.options.forEach((opt) => {
@@ -524,7 +584,7 @@
     });
     const err = h('p', { class: 'field-error', id: errId, hidden: true });
     const fieldset = h('fieldset', { class: 'group' + (cfg.cls ? ' ' + cfg.cls : '') },
-      h('legend', { class: 'group-legend' }, cfg.legend),
+      h('legend', { class: 'group-legend' }, cfg.legend, tipObj ? tipObj.el : null),
       cfg.before || null,
       list,
       cfg.help ? h('p', { class: 'field-help', id: helpId }, cfg.help) : null,
@@ -548,15 +608,18 @@
       inputmode: cfg.inputmode || null, autocomplete: 'off', spellcheck: 'false',
       maxlength: cfg.maxlength ? String(cfg.maxlength) : null
     });
-    const helpId = cfg.help ? cfg.id + '-help' : null;
+    const tipObj = cfg.tip ? tip(cfg.tip) : null;
+    const helpId = tipObj ? tipObj.id : (cfg.help ? cfg.id + '-help' : null);
     const err = h('p', { class: 'field-error', id: cfg.id + '-error', hidden: true });
     input.addEventListener('input', () => cfg.onInput(input.value));
     if (cfg.onBlur) input.addEventListener('blur', () => cfg.onBlur(input.value));
     const el = h('div', { class: 'field' + (cfg.cls ? ' ' + cfg.cls : '') },
-      h('label', { class: 'field-label', for: cfg.id },
-        cfg.label,
-        cfg.unit ? h('span', { class: 'sr-only' }, ' (' + cfg.unit + ')') : null,
-        cfg.req ? h('span', { class: 'field-req' }, ' ' + cfg.req) : null),
+      h('div', { class: 'field-head' },
+        h('label', { class: 'field-label', for: cfg.id },
+          cfg.label,
+          cfg.unit ? h('span', { class: 'sr-only' }, ' (' + cfg.unit + ')') : null,
+          cfg.req ? h('span', { class: 'field-req' }, ' ' + cfg.req) : null,
+          tipObj ? tipObj.el : null)),
       cfg.unit
         ? h('div', { class: 'input-group' }, input, h('span', { class: 'input-unit', 'aria-hidden': 'true' }, cfg.unit))
         : input,
@@ -578,12 +641,14 @@
   function checkboxField(cfg) {
     const input = h('input', { type: 'checkbox', id: cfg.id, class: 'check-input' });
     input.addEventListener('change', () => cfg.onChange(input.checked));
-    const helpId = cfg.help ? cfg.id + '-help' : null;
+    const tipObj = cfg.tip ? tip(cfg.tip) : null;
+    const helpId = tipObj ? tipObj.id : (cfg.help ? cfg.id + '-help' : null);
     if (helpId) input.setAttribute('aria-describedby', helpId);
     const el = h('div', { class: 'check-field' },
-      h('label', { class: 'check', for: cfg.id }, input,
-        h('span', { class: 'check-box', 'aria-hidden': 'true' }, icon('check')),
-        h('span', { class: 'check-label' }, cfg.label)),
+      h('div', { class: 'field-head' },
+        h('label', { class: 'check', for: cfg.id }, input,
+          h('span', { class: 'check-box', 'aria-hidden': 'true' }, icon('check')),
+          h('span', { class: 'check-label' }, cfg.label, tipObj ? tipObj.el : null))),
       cfg.help ? h('p', { class: 'field-help check-help', id: helpId }, cfg.help) : null);
     return { el, input, setChecked(v) { input.checked = !!v; } };
   }
@@ -672,7 +737,8 @@
       h('div', { class: 'meter-head' }, h('figcaption', { class: 'viz-title' }, 'B/C, projected fascial saving'), value),
       track,
       h('div', { class: 'meter-zones', 'aria-hidden': 'true' }, zones),
-      h('p', { class: 'viz-note' }, 'Ticks at ' + cut.moderateMin + ' and ' + cut.substantialMin + ': example cutoffs, not validated.'));
+      null);
+    el.querySelector('.meter-head').firstChild.after(tip('Ticks at ' + cut.moderateMin + ' and ' + cut.substantialMin + ': example cutoffs, not validated.', 'About the cutoffs').el);
     return {
       el,
       update(v) {
@@ -833,7 +899,7 @@
           h('span', { class: 'step-badge', 'aria-hidden': 'true' }, String(n)),
           h('div', { class: 'step-headings' },
             h('p', { class: 'step-kicker' }, 'Step ' + n + ' of ' + STEP_COUNT, sideBadge),
-            heading,
+            h('div', { class: 'step-title-row' }, heading, cfg.tip ? tip(cfg.tip, 'About this step').el : null),
             subtitle ? h('p', { class: 'step-sub' }, subtitle) : null)),
         h('div', { class: 'step-body' }, body),
         h('div', { class: 'step-nav' }, back, cfg.extra || null, next));
@@ -858,9 +924,9 @@
       const status = h('div', { class: 'gate-status' });
       const docBtn = h('button', { type: 'button', class: 'btn btn-primary', hidden: true, on: { click: () => goStep(idx, 6) } },
         h('span', null, 'Document this outcome'), icon('chevron-right'));
-      const sh = shell(1, FW.gate1.title, 'Answer all three items. Any “No” stops the assessment for this side.',
+      const sh = shell(1, FW.gate1.title, null,
         [sideGroup ? sideGroup.el : null, h('div', { class: 'gate-list' }, gates.map((g) => g.el)), status],
-        { extra: docBtn });
+        { extra: docBtn, tip: 'Answer all three items. Any “No” stops the assessment for this side; any “Uncertain” lets you continue, but the suggestion becomes “' + FW.plan.plans.assess.label + '”.' });
 
       function statusContent(ev) {
         if (ev.gate === 'passed') {
@@ -908,21 +974,21 @@
     function step2() {
       const C = FW.ct;
       const fA = textField({
-        id: pid + '-A', label: C.A.label, req: '— ' + C.A.requirement, unit: C.unit, inputmode: 'decimal', cls: 'field-num',
+        id: pid + '-A', label: C.A.label, tip: L.capitalize(C.A.requirement) + '.', unit: C.unit, inputmode: 'decimal', cls: 'field-num',
         onInput: (v) => { S().m.A = v; changed(); },
         onBlur: (v) => { if (v.trim()) touch('A'); }
       });
       const para = checkboxField({
-        id: pid + '-para', label: C.paramuscular.label, help: L.capitalize(C.paramuscular.hint) + '.',
+        id: pid + '-para', label: C.paramuscular.label, tip: L.capitalize(C.paramuscular.hint) + '.',
         onChange: (v) => { S().m.paramuscular = v; changed(); }
       });
       const fC = textField({
-        id: pid + '-C', label: C.C.label, req: '— ' + C.C.requirement, unit: C.unit, inputmode: 'decimal', cls: 'field-num',
+        id: pid + '-C', label: C.C.label, unit: C.unit, inputmode: 'decimal', cls: 'field-num',
         onInput: (v) => { S().m.C = v; changed(); },
         onBlur: (v) => { if (v.trim()) touch('C'); }
       });
       const f3 = textField({
-        id: pid + '-3d', label: C.course3d.label, help: C.course3d.help, unit: C.unit, inputmode: 'decimal', cls: 'field-num',
+        id: pid + '-3d', label: C.course3d.label, tip: C.course3d.help, unit: C.unit, inputmode: 'decimal', cls: 'field-num',
         onInput: (v) => { S().m.course3d = v; changed(); },
         onBlur: (v) => { if (v.trim()) touch('course3d'); }
       });
@@ -956,9 +1022,8 @@
       const sh = shell(2, C.title, 'Values in cm with one decimal place.', [
         h('div', { class: 'split' },
           h('div', { class: 'stack' }, fA.el, para.el, fC.el, f3.el, rel.el, meth.el),
-          h('div', { class: 'split-aside' }, calcCard)),
-        callout('info', 'info', null, C.help)
-      ]);
+          h('div', { class: 'split-aside' }, calcCard))
+      ], { tip: C.help });
 
       return {
         el: sh.el, heading: sh.heading,
@@ -1036,7 +1101,7 @@
       const routeNote = h('p', { class: 'field-help', hidden: true }, 'No route is needed when no robotic route is feasible.');
       route.el.append(routeNote);
       const access = choiceGroup({
-        name: pid + '-access', legend: D.access.label, cls: 'domain', before: route.el, help: D.access.help,
+        name: pid + '-access', legend: D.access.label, cls: 'domain', before: route.el, tip: D.access.help,
         options: gradeOptions('access', ['low', 'moderate', 'high']).concat([
           { value: 'none', chip: chip('cx', 'none'), tone: 'none' },
           { value: 'na', chip: chip('cx', 'na'), tone: 'na' }
@@ -1046,13 +1111,13 @@
 
       const team = choiceGroup({
         name: pid + '-team', legend: FW.complexity.team.label, variant: 'pills', cls: 'domain',
-        help: FW.complexity.team.help,
+        tip: FW.complexity.team.help,
         options: Object.keys(FW.complexity.team.options).map((k) => ({ value: k, label: FW.complexity.team.options[k] })),
         onChange: (v) => { S().cx.team = v; changed(); }
       });
 
       const sh = shell(3, FW.complexity.title, FW.complexity.subtitle,
-        [config.el, course.el, access.el, team.el, callout('neutral', 'info', null, FW.benefit.notAssessableRule)]);
+        [config.el, course.el, access.el, team.el], { tip: FW.benefit.notAssessableRule });
 
       return {
         el: sh.el, heading: sh.heading,
@@ -1103,10 +1168,9 @@
         type: 'button', class: 'btn-link', hidden: true,
         on: { click: () => { S().benefitOverride = null; changed(); } }
       }, icon('refresh'), 'Reset to suggested');
-      const note = h('p', { class: 'group-note' }, icon('info', 'inline-icon'), B.suggestedLabel);
       const group = choiceGroup({
         name: pid + '-benefit', legend: [B.domainLabel, ' ', benefitTag], cls: 'domain',
-        before: [meter.el, note], after: reset,
+        before: meter.el, after: reset, tip: B.suggestedLabel,
         options: ['substantial', 'moderate', 'small', 'na'].map((k) => ({
           value: k, chip: chip('benefit', k), desc: B.descriptors[k] || '', tone: TONE.benefit[k],
           extra: h('span', { class: 'sug-badge', hidden: true }, icon('sparkle'), B.tags.suggested)
@@ -1118,7 +1182,7 @@
         }
       });
       const modifier = h('div', { class: 'modifier' });
-      const sh = shell(4, B.title, B.subtitle, [group.el, modifier, callout('neutral', 'info', null, B.notAssessableRule)]);
+      const sh = shell(4, B.title, B.subtitle, [group.el, modifier], { tip: B.notAssessableRule });
 
       return {
         el: sh.el, heading: sh.heading,
@@ -1153,7 +1217,7 @@
       let traceOpen = false;
 
       const planGroup = choiceGroup({
-        name: pid + '-plan', variant: 'plans', cls: 'plans-group',
+        name: pid + '-plan', variant: 'plans', cls: 'plans-group', tip: P.footnote,
         legend: [P.selectedLabel, h('span', { class: 'field-req' }, ' (required)')],
         before: h('p', { class: 'group-note' }, icon('pencil', 'inline-icon'), FW.finalPlanNote),
         options: P.order.map((k) => ({
@@ -1168,7 +1232,6 @@
         })),
         onChange: (v) => { S().plan.selected = v; changed(); }
       });
-      const footnote = h('p', { class: 'footnote' }, P.footnote);
       const differs = h('div', { class: 'differs', hidden: true, role: 'status' }, icon('alert'),
         h('span', null, h('strong', null, P.differs), ': a rationale is required.'));
 
@@ -1207,14 +1270,12 @@
         ratErr);
 
       const sh = shell(5, P.title, null, [
-        h('div', { class: 'lead' }, icon('layers', 'lead-icon'), h('p', null, P.intro)),
         hero,
         planGroup.el,
-        footnote,
         differs,
         h('div', { class: 'surgeon-grid' }, limField, ratField),
         h('div', { class: 'override' }, icon('eye', 'override-icon'), h('p', null, P.override))
-      ], { nextLabel: 'View summary' });
+      ], { nextLabel: 'View summary', tip: P.intro });
 
       function outcomeText(rule) {
         if (!rule.outcome) return P.noPlanOutcome;
@@ -1244,7 +1305,7 @@
         return [
           h('div', { class: 'hero-top' },
             h('span', { class: 'hero-kicker' }, icon('sparkle', 'inline-icon'), FW.suggestionLabel),
-            h('span', { class: 'rule-pill' }, 'Matched rule ' + sug.rule)),
+            h('span', { class: 'hero-top-right' }, h('span', { class: 'rule-pill' }, 'Matched rule ' + sug.rule), tip(['Note: ' + P.highestNote, P.footnote], 'About the suggestion').el)),
           h('div', { class: 'hero-plan' },
             h('span', { class: 'plan-badge plan-badge-lg plan-' + sug.plan }, icon(PLAN_ICON[sug.plan])),
             h('div', null,
@@ -1256,8 +1317,7 @@
             h('ul', { class: 'drivers' }, sug.drivers.map((d) => h('li', { class: 'driver' },
               h('span', { class: 'driver-label' }, d.label),
               h('span', { class: 'driver-value' }, d.value))))),
-          details,
-          h('p', { class: 'hero-note' }, h('strong', null, 'Note: '), P.highestNote)
+          details
         ];
       }
 

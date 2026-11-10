@@ -188,6 +188,7 @@ tests/logic.test.mjs          unit tests (node:test)
 - **Semantic structure:** semantic HTML, with a fieldset and legend for every choice group.
 - **Keyboard:** full keyboard operation with visible focus.
 - **Screen readers:** a live region announces the suggestion and errors.
+- **Help on demand:** help text and notes sit behind (?) tips that open on hover, keyboard focus or tap.
 - **Contrast:** WCAG 2.1 AA, checked with axe-core in light and dark themes.
 - **Not colour alone:** every grade shows its word and an icon.
 - **System settings:** the page follows the system's light or dark setting and its reduced-motion preference.

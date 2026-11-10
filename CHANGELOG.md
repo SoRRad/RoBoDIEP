@@ -2,6 +2,14 @@
 
 All notable changes are recorded here. The version matches `version` in `assets/js/framework.js`. That version is printed on every exported note, CSV row and printed page, so each export can be traced to the exact framework wording and cutoffs.
 
+## [Unreleased]
+
+### Changed
+
+- **Design refresh:** Inter typeface (bundled, no external requests), a calmer type scale, a clean white header with underlined tabs, and dividers instead of nested boxes.
+- **(?) tips:** help text and notes now sit behind a (?) that opens on hover, keyboard focus or tap. Grade descriptors, the disclaimer, the Gate 1 stop message, every "Suggestion (unvalidated)" label and the intraoperative override stay visible.
+- **Phones:** Back and Next stay in reach at the bottom of the screen.
+
 ## [1.0.1] – 2026-11-10
 
 ### Changed
