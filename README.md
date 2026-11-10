@@ -206,4 +206,6 @@ Shahriarirad R, Vijayasekaran A. Patient Selection for Robotic-Assisted DIEP Fla
 
 © 2026 Reza Shahriarirad and Aparna Vijayasekaran.
 
+Mayo Clinic and the triple-shield logo are trademarks of Mayo Foundation for Medical Education and Research, used with permission. They are not covered by the licenses above.
+
 Found a problem? [Report an issue](https://github.com/SoRRad/RoBoDIEP/issues). Please do not include patient information.

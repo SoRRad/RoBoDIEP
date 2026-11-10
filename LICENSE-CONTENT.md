@@ -12,4 +12,8 @@ The following content is licensed under the Creative Commons Attribution 4.0 Int
 
 The Inter typeface embedded in `assets/css/fonts.css` is © The Inter Project Authors and licensed under the SIL Open Font License 1.1 (`assets/fonts/Inter-OFL.txt`).
 
+The Source Serif 4 typeface embedded in `assets/css/fonts.css` is © Adobe and licensed under the SIL Open Font License 1.1 (`assets/fonts/SourceSerif4-OFL.txt`).
+
+**Trademarks:** Mayo Clinic and the triple-shield logo (`assets/img/brand/`) are trademarks of Mayo Foundation for Medical Education and Research, used with permission. They are **not** licensed under MIT or CC BY 4.0 and may not be reused without Mayo Clinic's permission.
+
 All other files, including the code in `index.html`, `assets/css/`, `assets/js/` and `tests/`, are licensed under the MIT License in `LICENSE`.

@@ -519,10 +519,12 @@
     byId('brand-word').textContent = FW.meta.wordmark;
     byId('brand-title').textContent = FW.meta.toolName;
     byId('version-pill').textContent = 'v' + FW.version;
+    byId('band-title').textContent = FW.meta.tagline;
     els.disclaimer.replaceChildren(icon('shield', 'disclaimer-icon'), h('p', null, FW.disclaimer));
     const lic = FW.meta.license;
     els.footer.replaceChildren(h('div', { class: 'wrap footer-grid' },
       h('div', { class: 'footer-col' },
+        h('img', { class: 'footer-logo', src: 'assets/img/brand/mayo-clinic-logo-white.svg', alt: FW.meta.organization, width: '59', height: '64' }),
         h('p', { class: 'footer-title' }, FW.meta.wordmark + ' · ' + FW.meta.toolName + ' v' + FW.version),
         h('p', null, FW.disclaimer),
         h('p', { class: 'footer-privacy' }, icon('lock', 'inline-icon'), FW.privacy + '.')),
@@ -533,7 +535,8 @@
           h('a', { href: '#about' }, 'How to cite'), ' · ',
           extLink(FW.meta.issuesUrl, FW.about.reportIssue), ' · ',
           extLink(FW.meta.repoUrl, 'Source code'), ' · ',
-          extLink(FW.meta.changelogUrl, 'Changelog')))));
+          extLink(FW.meta.changelogUrl, 'Changelog')),
+        h('p', { class: 'footer-tm' }, FW.meta.trademark))));
   }
 
   /* ======================================================================= */
@@ -1590,6 +1593,7 @@
       const oev = o ? evs[1 - i] : null;
       return h('article', { class: 'print-page' },
         h('header', { class: 'pp-head' },
+          h('img', { class: 'pp-logo', src: 'assets/img/brand/mayo-clinic-logo.svg', alt: FW.meta.organization, width: '59', height: '64' }),
           h('div', null, h('strong', null, FW.meta.toolName), ' v' + FW.version + ' · framework dated ' + FW.date),
           h('div', null, state.caseLabel.trim() ? FW.caseLabel.label + ': ' + state.caseLabel.trim() : '')),
         h('h1', { class: 'pp-title' }, L.fill(FW.summary.note.header, { side: side.side || '' })),
@@ -2093,6 +2097,7 @@
             dlRow('Authors', authorLine()),
             dlRow('Code license', lic.code),
             dlRow('Content license', [lic.content, ' (clinical text, documentation, schematic)'])),
+          h('p', { class: 'muted' }, FW.meta.trademark),
           h('p', { class: 'row-links' }, extLink(FW.meta.changelogUrl, 'Changelog'), ' · ', extLink(FW.meta.repoUrl, 'Source code'))),
         h('section', { class: 'card pad is-wide' },
           h('h3', { class: 'card-title' }, T.rules),

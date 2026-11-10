@@ -11,6 +11,7 @@
 
 :root {
   color-scheme: light;
+  --serif: "Source Serif 4", Georgia, "Times New Roman", serif;
   --font: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
   --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
 
@@ -4331,6 +4332,213 @@ body {
 
 
 /* ========================================================================= */
+/* Mayo Clinic theme                                                          */
+/* ========================================================================= */
+
+:root {
+  --canvas: #f4f6f9;
+  --band-a: #0067b1;
+  --band-b: #004f8a;
+  --footer-bg: #0b2540;
+  --footer-ink: #d7e3f0;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --canvas: #0b1119;
+    --band-a: #0b3a63;
+    --band-b: #08294a;
+    --footer-bg: #070d14;
+    --footer-ink: #b9c7d6;
+  }
+}
+
+body {
+  background: var(--canvas);
+}
+
+/* Serif headings echo the Mayo Clinic wordmark */
+.brand-title,
+.band-title,
+.step-title,
+.page-title,
+.hero-title,
+.sum-title,
+.panel-title,
+.card-title,
+.combined caption,
+.pp-title {
+  font-family: var(--serif);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.step-title {
+  font-size: 24px;
+}
+
+@media (min-width: 768px) {
+  .step-title {
+    font-size: 30px;
+  }
+}
+
+.page-title {
+  font-size: 32px;
+}
+
+.hero-title {
+  font-size: 26px;
+}
+
+@media (min-width: 768px) {
+  .hero-title {
+    font-size: 30px;
+  }
+}
+
+.card-title {
+  font-size: 19px;
+}
+
+.panel-title {
+  font-size: 18px;
+}
+
+/* Header with logo */
+.brand {
+  gap: 16px;
+}
+
+.brand-logo {
+  display: block;
+  width: auto;
+  height: 46px;
+}
+
+@media (min-width: 768px) {
+  .brand-logo {
+    height: 56px;
+  }
+}
+
+.brand-divider {
+  align-self: stretch;
+  width: 1px;
+  height: auto;
+  margin: 4px 0;
+  background: var(--border);
+}
+
+.brand-title {
+  font-size: 18px;
+  line-height: 1.15;
+}
+
+@media (min-width: 768px) {
+  .brand-title {
+    font-size: 23px;
+  }
+}
+
+.brand-word {
+  color: var(--primary-text);
+}
+
+/* Branded band under the header */
+.band {
+  background: linear-gradient(120deg, var(--band-a) 0%, var(--band-b) 100%);
+  color: #ffffff;
+}
+
+.band-inner {
+  display: grid;
+  gap: 6px;
+  padding-top: 22px;
+  padding-bottom: 20px;
+}
+
+.band-kicker {
+  color: #cfe4f6;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.band-title {
+  max-width: 34ch;
+  color: #ffffff;
+  font-size: 24px;
+  line-height: 1.2;
+}
+
+@media (min-width: 768px) {
+  .band-inner {
+    padding-top: 30px;
+    padding-bottom: 26px;
+  }
+
+  .band-title {
+    max-width: none;
+    font-size: 32px;
+  }
+}
+
+.band .disclaimer {
+  margin-top: 8px;
+  padding: 8px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+}
+
+.band .disclaimer-icon {
+  color: #ffffff;
+}
+
+/* Cards float on the canvas */
+.case-bar,
+.step,
+.panel,
+.info .card {
+  border-color: var(--border);
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.05), 0 4px 16px rgba(16, 24, 40, 0.05);
+}
+
+.case-bar {
+  margin-top: 20px;
+}
+
+/* Footer */
+.site-footer {
+  border-top: 0;
+  background: var(--footer-bg);
+  color: var(--footer-ink);
+}
+
+.site-footer a {
+  color: #ffffff;
+}
+
+.footer-title {
+  color: #ffffff;
+}
+
+.footer-logo {
+  display: block;
+  width: auto;
+  height: 52px;
+  margin-bottom: 14px;
+}
+
+.footer-tm {
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+
+/* ========================================================================= */
 
 @media (prefers-reduced-motion: reduce) {
   *,
@@ -4482,12 +4690,34 @@ body {
     page-break-after: auto;
   }
 
+  .band {
+    background: none !important;
+    color: #000000;
+  }
+
+  .band-kicker,
+  .band-title {
+    display: none;
+  }
+
+  .band .disclaimer {
+    border-color: #999999;
+    color: #000000;
+  }
+
+  .pp-logo {
+    display: block;
+    width: auto;
+    height: 34px;
+  }
+
   .pp-head {
+    align-items: center;
     display: flex;
     justify-content: space-between;
     gap: 12px;
     padding-bottom: 4pt;
-    border-bottom: 1.5pt solid #1f3a5f;
+    border-bottom: 1.5pt solid #0067b1;
     font-size: 8.5pt;
   }
 
