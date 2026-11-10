@@ -1,0 +1,39 @@
+cff-version: 1.2.0
+message: >-
+  If you use this calculator, please cite the article below. The article is
+  pending publication; the volume, article number and DOI will be added.
+title: Robotic DIEP Selection Calculator
+abstract: >-
+  Browser-only research and educational calculator implementing a proposed
+  framework for selecting patients for robotic-assisted DIEP flap harvest using
+  preoperative CT angiography. Not a medical device; suggestions are unvalidated.
+type: software
+authors:
+  - given-names: Reza
+    family-names: Shahriarirad
+  - given-names: Aparna
+    family-names: Vijayasekaran
+version: 1.0.0
+date-released: "2026-11-10"
+license: MIT
+repository-code: "https://github.com/SoRRad/RoBoDIEP"
+url: "https://sorrad.github.io/RoBoDIEP/"
+keywords:
+  - DIEP flap
+  - robotic surgery
+  - breast reconstruction
+  - CT angiography
+  - patient selection
+preferred-citation:
+  type: article
+  title: >-
+    Patient Selection for Robotic-Assisted DIEP Flap Harvest Using Preoperative
+    CT Angiography: A Systematic Review With Exploratory Meta-analysis and a
+    Proposed Selection Framework
+  authors:
+    - given-names: Reza
+      family-names: Shahriarirad
+    - given-names: Aparna
+      family-names: Vijayasekaran
+  journal: "Plastic and Reconstructive Surgery – Global Open"
+  notes: "Publication pending; year, volume, article number and DOI to be added."
