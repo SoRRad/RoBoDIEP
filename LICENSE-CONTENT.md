@@ -10,4 +10,6 @@ The following content is licensed under the Creative Commons Attribution 4.0 Int
 
 **Attribution:** cite the article listed under "Cite" in `README.md` (also in `CITATION.cff`), and link to https://github.com/SoRRad/RoBoDIEP.
 
+The Inter typeface embedded in `assets/css/fonts.css` is © The Inter Project Authors and licensed under the SIL Open Font License 1.1 (`assets/fonts/Inter-OFL.txt`).
+
 All other files, including the code in `index.html`, `assets/css/`, `assets/js/` and `tests/`, are licensed under the MIT License in `LICENSE`.

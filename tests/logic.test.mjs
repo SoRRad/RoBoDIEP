@@ -373,7 +373,8 @@ describe('Suggested principal limiting factor', () => {
   test('ties are all listed', () => {
     assert.deepEqual(keys(input({ config: 'moderate', course: 'moderate', access: 'low', team: 'early' })), ['config', 'course']);
     assert.deepEqual(keys(input({ config: 'high', course: 'high', access: 'high' })), ['config', 'course', 'access']);
-    assert.deepEqual(keys(input()), ['config', 'course', 'access']);
+    assert.deepEqual(keys(input()), []);
+    assert.deepEqual(keys(input({ benefit: 'moderate' })), ['benefit']);
   });
 
   test('the least favorable domain is suggested', () => {
@@ -504,7 +505,7 @@ describe('Copy note', () => {
       'Team: Established',
       'Suggested (unvalidated): Consider robotic harvest – Substantial benefit with moderate complexity (course) and an established team',
       'Selected: Consider robotic harvest | Limiting factor: Intramuscular course | Rationale: Single dominant perforator; short intramuscular course.',
-      'Tool: Robotic DIEP Selection Calculator v1.0.0; research use only.'
+      'Tool: Robotic DIEP Selection Calculator v1.0.1; research use only.'
     ].join('\n'));
   });
 
@@ -532,7 +533,7 @@ describe('Copy note', () => {
       'ROBOTIC DIEP SELECTION – Left',
       'Gate 1 (flap safety): failed',
       FW.gate1.failMessage,
-      'Tool: Robotic DIEP Selection Calculator v1.0.0; research use only.'
+      'Tool: Robotic DIEP Selection Calculator v1.0.1; research use only.'
     ].join('\n'));
   });
 
@@ -576,7 +577,7 @@ describe('CSV export', () => {
   test('a full row for the fixed example', () => {
     const csv = L.buildCSV([fixedExample()], 'Case 1');
     assert.equal(csv.split('\r\n')[1], [
-      '1.0.0', 'Case 1', 'Left', 'TAPP', 'Yes', 'Yes', 'Yes', '3.1', '12.2', '9.1', '0.746', '4.0', 'no',
+      '1.0.1', 'Case 1', 'Left', 'TAPP', 'Yes', 'Yes', 'Yes', '3.1', '12.2', '9.1', '0.746', '4.0', 'no',
       'Above', 'Identified on imaging', 'Low', 'Moderate', 'auto', 'Low', 'Established', 'Substantial',
       'suggested', 'Consider robotic harvest',
       'Substantial benefit with moderate complexity (course) and an established team',
@@ -758,7 +759,7 @@ describe('Framework strings match the specification exactly', () => {
       eligibility: 'In one cohort, eligibility rose from 46% (≤2.5 cm) to 93% (≤5 cm).',
       fascia: 'Fascial incision about 65% shorter with robotic harvest (ratio of means 0.35; robotic about 3.5 cm). Low certainty.',
       periop: 'Operative time about 75 minutes longer; hospital stay about 0.6 days shorter; early pain lower. Very low certainty.',
-      safety: 'Total flap loss 1 of 135 robotic flaps; conversion 1 of 79; no hernia in 60 or bulge in 41 explicitly assessed patients, over about 5–15 months of follow-up. Long-term abdominal-wall benefit is unproven.'
+      safety: 'Total flap loss 1 of 135 robotic flaps; conversion 1 of 79 robotic flaps; no hernia in 60 or bulge in 41 explicitly assessed patients, over about 5–15 months of follow-up. Long-term abdominal-wall benefit is unproven.'
     });
     assert.equal(FW.evidence.note, 'The B/C cutoffs and plan-matching order used in this calculator are tool defaults for prospective evaluation and are not part of the published framework.');
   });

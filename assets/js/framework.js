@@ -23,7 +23,7 @@
 'use strict';
 
 const FRAMEWORK = {
-  version: '1.0.0',
+  version: '1.0.1',
   date: '2026-11-10',
 
   meta: {
@@ -373,7 +373,7 @@ const FRAMEWORK = {
       eligibility: 'In one cohort, eligibility rose from 46% (≤2.5 cm) to 93% (≤5 cm).',
       fascia: 'Fascial incision about 65% shorter with robotic harvest (ratio of means 0.35; robotic about 3.5 cm). Low certainty.',
       periop: 'Operative time about 75 minutes longer; hospital stay about 0.6 days shorter; early pain lower. Very low certainty.',
-      safety: 'Total flap loss 1 of 135 robotic flaps; conversion 1 of 79; no hernia in 60 or bulge in 41 explicitly assessed patients, over about 5–15 months of follow-up. Long-term abdominal-wall benefit is unproven.'
+      safety: 'Total flap loss 1 of 135 robotic flaps; conversion 1 of 79 robotic flaps; no hernia in 60 or bulge in 41 explicitly assessed patients, over about 5–15 months of follow-up. Long-term abdominal-wall benefit is unproven.'
     },
     note: 'The B/C cutoffs and plan-matching order used in this calculator are tool defaults for prospective evaluation and are not part of the published framework.',
     // Figures drawn from the sentences above (same numbers) for the visuals.
@@ -405,7 +405,7 @@ const FRAMEWORK = {
       safety: {
         items: [
           { label: 'Total flap loss', events: 1, total: 135, unit: 'robotic flaps' },
-          { label: 'Conversion', events: 1, total: 79, unit: '' },
+          { label: 'Conversion', events: 1, total: 79, unit: 'robotic flaps' },
           { label: 'Hernia', events: 0, total: 60, unit: 'explicitly assessed patients' },
           { label: 'Bulge', events: 0, total: 41, unit: 'explicitly assessed patients' }
         ],
