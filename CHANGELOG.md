@@ -2,6 +2,13 @@
 
 All notable changes are recorded here. The version matches `version` in `assets/js/framework.js`. That version is printed on every exported note, CSV row and printed page, so each export can be traced to the exact framework wording and cutoffs.
 
+## [1.0.1] – 2026-11-10
+
+### Changed
+
+- **Limiting-factor suggestion:** when every complexity domain is Low, the three domains are no longer all listed as "limiting". Nothing is suggested, or *Expected benefit* when the benefit is Moderate.
+- **Evidence tab:** conversion now reads "1 of 79 robotic flaps", matching the manuscript.
+
 ## [1.0.0] – 2026-11-10
 
 ### Added

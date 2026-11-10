@@ -445,7 +445,9 @@
    *   b → Flap safety; c → the not-assessable domain(s) (an indeterminate
    *   arcuate line → Expected benefit); No feasible robotic route → Access;
    *   Small benefit → "Small expected benefit"; otherwise the complexity
-   *   domain(s) with the least favorable grade, with ties all listed.
+   *   domain(s) with the least favorable grade, with ties all listed. When every
+   *   complexity domain is Low, nothing is suggested, or Expected benefit when the
+   *   benefit is Moderate.
    * Team experience is never suggested automatically.
    * Returns [{ key, label, detail }], where key matches the dropdown options.
    */
@@ -479,6 +481,11 @@
     if (factors.length) return factors;
     var worst = 0;
     DOMAINS.forEach(function (d) { worst = Math.max(worst, RANK[input[d]] || 0); });
+    if (worst === RANK.low) {
+      return input.benefit === 'moderate'
+        ? [{ key: 'benefit', label: options.benefit, detail: benefitLabel('moderate') }]
+        : [];
+    }
     return DOMAINS.filter(function (d) { return RANK[input[d]] === worst; }).map(function (d) {
       return { key: d, label: options[d], detail: complexityLabel(input[d]) };
     });
