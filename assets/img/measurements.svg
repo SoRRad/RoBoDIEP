@@ -1,0 +1,182 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 600" width="820" height="600" role="img" aria-labelledby="ms-title ms-desc" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif">
+  <title id="ms-title">Measuring A, B and C on a sagittal view of the lower abdominal wall (schematic, not to scale)</title>
+  <desc id="ms-desc">Sagittal schematic, cranial at the top and anterior to the left. The perforator exits the anterior rectus sheath, runs obliquely through the rectus abdominis muscle and joins the deep inferior epigastric artery (DIEA) on the deep surface of the muscle; the DIEA runs caudally to its origin from the external iliac artery. A is the craniocaudal extent of the intramuscular course. C is the craniocaudal distance from the perforator to the external iliac origin, measured with the same reference convention. B = C − A. The arcuate line marks the lower edge of the posterior rectus sheath.</desc>
+  <!-- Original schematic for the Robotic DIEP Selection Calculator. CC BY 4.0. -->
+  <defs>
+    <style>
+      .bg { fill: #fbfcfe; }
+      .fat { fill: #f8ebcb; }
+      .skin { fill: none; stroke: #c9a27c; stroke-width: 3; stroke-linecap: round; }
+      .sheath { fill: #c3ccd8; }
+      .edge { fill: none; stroke: #8c9aae; stroke-width: 1.2; }
+      .muscle { fill: #ebb8ad; }
+      .fiber { fill: none; stroke: #dc9f93; stroke-width: 1.3; }
+      .post-sheath { fill: none; stroke: #7f8ea2; stroke-width: 4; stroke-linecap: round; }
+      .tf { fill: none; stroke: #8c9aae; stroke-width: 1.8; }
+      .peri { fill: none; stroke: #c9d1dc; stroke-width: 1.2; }
+      .bone { fill: #ded7c7; stroke: #b8af9c; stroke-width: 1.5; }
+      .artery { fill: none; stroke: #a63d40; stroke-width: 5; stroke-linecap: round; }
+      .artery-thin { fill: none; stroke: #a63d40; stroke-width: 2.6; stroke-linecap: round; }
+      .im { fill: none; stroke: #6e1a1d; stroke-width: 6.5; stroke-linecap: round; }
+      .vein { fill: none; stroke: #4a6fa5; stroke-width: 2; stroke-linecap: round; }
+      .eia { fill: #f2d3d3; stroke: #a63d40; stroke-width: 3; }
+      .exit { fill: #ffffff; stroke: #6e1a1d; stroke-width: 2.5; }
+      .guide { fill: none; stroke: #94a3b8; stroke-width: 1; stroke-dasharray: 4 4; }
+      .arcuate { fill: none; stroke: #9a6200; stroke-width: 2.2; stroke-dasharray: 8 5; }
+      .dim { fill: none; stroke-width: 2.6; stroke-linecap: round; }
+      .tick { fill: none; stroke-width: 2.2; stroke-linecap: round; }
+      .s-a { stroke: #64748b; }
+      .s-b { stroke: #2465bd; }
+      .s-c { stroke: #1f3a5f; }
+      .f-a { fill: #64748b; }
+      .f-b { fill: #2465bd; }
+      .f-c { fill: #1f3a5f; }
+      .t { fill: #1f2937; font-size: 13px; }
+      .t-muted { fill: #4b5563; font-size: 12px; }
+      .t-small { fill: #4b5563; font-size: 11px; }
+      .t-strong { font-weight: 700; }
+      .letter { font-size: 26px; font-weight: 800; }
+      .arc-label { fill: #7a4a05; font-size: 12.5px; font-weight: 700; }
+      .compass { fill: none; stroke: #64748b; stroke-width: 1.6; stroke-linecap: round; }
+      .compass-head { fill: #64748b; }
+      .lead { fill: none; stroke: #94a3b8; stroke-width: 1; }
+      @media (prefers-color-scheme: dark) {
+        .bg { fill: #0f1824; }
+        .fat { fill: #3d3422; }
+        .skin { stroke: #a1805e; }
+        .sheath { fill: #4d5d72; }
+        .edge, .tf { stroke: #8c9aae; }
+        .post-sheath { stroke: #9aa8ba; }
+        .peri { stroke: #3a4b61; }
+        .muscle { fill: #6a3934; }
+        .fiber { stroke: #83463f; }
+        .bone { fill: #48433a; stroke: #6f6754; }
+        .artery, .artery-thin { stroke: #e27474; }
+        .im { stroke: #ffc2c2; }
+        .vein { stroke: #82a6dc; }
+        .eia { fill: #4a2023; stroke: #e27474; }
+        .exit { fill: #0f1824; stroke: #ffc2c2; }
+        .guide { stroke: #50627a; }
+        .arcuate { stroke: #f2c882; }
+        .s-a { stroke: #a3b0c2; }
+        .s-b { stroke: #5b9be6; }
+        .s-c { stroke: #a8c7ee; }
+        .f-a { fill: #a3b0c2; }
+        .f-b { fill: #5b9be6; }
+        .f-c { fill: #a8c7ee; }
+        .t { fill: #e7edf5; }
+        .t-muted, .t-small { fill: #a3b0c2; }
+        .arc-label { fill: #f2c882; }
+        .compass { stroke: #a3b0c2; }
+        .compass-head { fill: #a3b0c2; }
+        .lead { stroke: #50627a; }
+      }
+    </style>
+    <clipPath id="ms-muscle-clip">
+      <path d="M177 36 H288 V522 C288 540 272 552 246 552 H204 C188 552 177 540 177 524 Z"/>
+    </clipPath>
+    <marker id="ms-arrow-a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 Z" class="f-a"/>
+    </marker>
+    <marker id="ms-arrow-b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 Z" class="f-b"/>
+    </marker>
+    <marker id="ms-arrow-c" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 Z" class="f-c"/>
+    </marker>
+  </defs>
+
+  <rect class="bg" x="0" y="0" width="820" height="600" rx="16"/>
+
+  <!-- Skin and subcutaneous fat -->
+  <path class="fat" d="M46 36 C33 200 33 400 56 548 H168 V36 Z"/>
+  <path class="skin" d="M46 36 C33 200 33 400 56 548"/>
+  <path class="skin" d="M40 78 Q58 88 40 98"/>
+  <text class="t-small" x="52" y="66">Umbilicus</text>
+  <text class="t-muted" transform="rotate(-90 104 360)" x="104" y="360" text-anchor="middle">Subcutaneous fat</text>
+
+  <!-- Anterior rectus sheath -->
+  <rect class="sheath" x="168" y="36" width="9" height="512"/>
+  <path class="edge" d="M168 36 V548 M177 36 V548"/>
+
+  <!-- Rectus abdominis -->
+  <path class="muscle" d="M177 36 H288 V522 C288 540 272 552 246 552 H204 C188 552 177 540 177 524 Z"/>
+  <g clip-path="url(#ms-muscle-clip)">
+    <path class="fiber" d="M170 60 l130 22 M170 100 l130 22 M170 140 l130 22 M170 180 l130 22 M170 220 l130 22 M170 260 l130 22 M170 300 l130 22 M170 340 l130 22 M170 380 l130 22 M170 420 l130 22 M170 460 l130 22 M170 500 l130 22"/>
+  </g>
+  <text class="t-muted" transform="rotate(-90 236 420)" x="236" y="420" text-anchor="middle">Rectus abdominis</text>
+
+  <!-- Posterior rectus sheath (ends at the arcuate line), transversalis fascia, peritoneum -->
+  <path class="post-sheath" d="M296 36 V234 Q296 246 306 248"/>
+  <path class="tf" d="M306 248 V548"/>
+  <path class="peri" d="M324 36 V548"/>
+
+  <!-- Pubis -->
+  <ellipse class="bone" cx="232" cy="568" rx="80" ry="20"/>
+  <text class="t-small" x="232" y="572" text-anchor="middle">Pubis</text>
+
+  <!-- Arcuate line -->
+  <path class="arcuate" d="M160 248 H346"/>
+  <text class="arc-label" x="352" y="252">Arcuate line</text>
+
+  <!-- Vessels: perforator in fat, intramuscular course, DIEA, external iliac artery -->
+  <path class="artery-thin" d="M168 150 C140 146 110 132 78 120 M122 136 C110 150 94 160 76 166 M101 127 C97 113 87 103 71 97"/>
+  <path class="vein" d="M286 222 C291 298 291 396 294 458 C297 500 326 521 368 523"/>
+  <path class="artery" d="M291 214 C297 290 297 390 300 455 C303 495 330 512 366 514"/>
+  <path class="im" d="M177 150 C210 158 252 186 291 214"/>
+  <ellipse class="eia" cx="384" cy="516" rx="17" ry="14"/>
+  <circle class="exit" cx="174" cy="150" r="5"/>
+  <text class="t-muted" x="58" y="196">Perforator</text>
+  <path class="lead" d="M300 428 H336"/>
+  <text class="t-muted" x="340" y="432">DIEA</text>
+  <text class="t-muted" x="384" y="552" text-anchor="middle">External iliac artery</text>
+
+  <!-- Fascia labels with leaders -->
+  <path class="lead" d="M299 98 H332"/>
+  <text class="t-small" x="336" y="94">Posterior</text>
+  <text class="t-small" x="336" y="108">rectus sheath</text>
+  <path class="lead" d="M308 318 H332"/>
+  <text class="t-small" x="336" y="314">Transversalis</text>
+  <text class="t-small" x="336" y="328">fascia</text>
+  <path class="lead" d="M150 486 H167"/>
+  <text class="t-small" x="146" y="482" text-anchor="end">Anterior</text>
+  <text class="t-small" x="146" y="496" text-anchor="end">rectus sheath</text>
+
+  <!-- Reference lines -->
+  <path class="guide" d="M182 150 H596 M296 214 H528 M392 514 H596"/>
+
+  <!-- A and B (same line), C (outer line) -->
+  <path class="tick s-a" d="M512 150 H528"/>
+  <path class="tick s-b" d="M512 214 H528"/>
+  <path class="tick s-b" d="M512 514 H528"/>
+  <path class="dim s-a" d="M520 156 V208" marker-start="url(#ms-arrow-a)" marker-end="url(#ms-arrow-a)"/>
+  <path class="dim s-b" d="M520 220 V508" marker-start="url(#ms-arrow-b)" marker-end="url(#ms-arrow-b)"/>
+  <path class="tick s-c" d="M580 150 H596 M580 514 H596"/>
+  <path class="dim s-c" d="M588 156 V508" marker-start="url(#ms-arrow-c)" marker-end="url(#ms-arrow-c)"/>
+
+  <text class="letter f-a" x="506" y="191" text-anchor="end">A</text>
+  <text class="t t-strong" x="478" y="176" text-anchor="end">Intramuscular course</text>
+  <text class="t-muted" x="478" y="192" text-anchor="end">craniocaudal extent</text>
+
+  <text class="letter f-b" x="506" y="372" text-anchor="end">B</text>
+  <text class="t t-strong" x="480" y="354" text-anchor="end">B = C − A</text>
+  <text class="t-muted" x="480" y="370" text-anchor="end">projected fascial saving</text>
+
+  <text class="letter f-c" x="604" y="330">C</text>
+  <text class="t t-strong" x="604" y="352">Perforator to external</text>
+  <text class="t t-strong" x="604" y="368">iliac origin</text>
+  <text class="t-muted" x="604" y="384">craniocaudal, same</text>
+  <text class="t-muted" x="604" y="399">reference convention as A</text>
+
+  <!-- Orientation -->
+  <g transform="translate(722 76)">
+    <path class="compass" d="M0 -22 V22 M-22 0 H22"/>
+    <path class="compass-head" d="M0 -28 L-5 -19 H5 Z M0 28 L-5 19 H5 Z M-28 0 L-19 -5 V5 Z M28 0 L19 -5 V5 Z"/>
+    <text class="t-small" x="0" y="-34" text-anchor="middle">Cranial</text>
+    <text class="t-small" x="0" y="44" text-anchor="middle">Caudal</text>
+    <text class="t-small" x="-34" y="4" text-anchor="end">Anterior</text>
+    <text class="t-small" x="34" y="4">Posterior</text>
+  </g>
+
+  <text class="t-muted" x="796" y="584" text-anchor="end" font-style="italic">Schematic, not to scale.</text>
+</svg>
