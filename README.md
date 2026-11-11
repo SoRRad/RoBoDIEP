@@ -31,10 +31,12 @@ The site has two tabs: **Calculator** and **Evidence & About**. The calculator h
 
 1. **Case setup.** Optionally add a *Case label*; do not enter patient identifiers. Tick **Assess both sides** to grade each hemiabdomen separately.
 2. **Step 1, Flap safety & CT measurements.**
-   - Answer the three Gate 1 items. Any **No** stops that side: the CT section is hidden, and no grades or plan are shown. Any **Uncertain** lets you continue, but the suggestion becomes *Additional assessment needed*.
+   - Answer the three Gate 1 questions. Any **No** stops that side: the CT section is hidden and an **early-stop summary** appears in its place, listing the item(s) not met and the next step, with an optional note and print, copy-note and CSV buttons. Any **Uncertain** lets you continue, but the suggestion becomes *Additional assessment needed*.
    - Enter A, C, the optional 3D length, and the arcuate-line relation and method. B = C − A and B/C are calculated live. The **How to measure** button opens the measuring guide beside the inputs.
 3. **Step 2, Complexity & expected benefit.** Grade configuration, intramuscular course and access, and record team experience. The course grade is auto-filled from A. The expected-benefit grade is pre-selected from B/C using example cutoffs. Override either if your assessment differs.
 4. **Step 3, Plan & summary.** Review the **Suggestion (unvalidated)**, why it was made, and how the rules matched. Choose your plan, the principal limiting factor and a rationale; the rationale is required when your plan differs from the suggestion. The summary sits on the same page, with print or save as PDF (one page per side), copy note and CSV download.
+
+Each question is written in plain language, with answers as small buttons on the same line. Its **(?)** explains what to consider and quotes the original framework wording. The **Next** button shows how many required items are still missing on that step.
 
 The **Try an example** menu loads fictional teaching cases.
 

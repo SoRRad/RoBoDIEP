@@ -6,6 +6,10 @@ All notable changes are recorded here. The version matches `version` in `assets/
 
 ### Changed
 
+- **Plain-language questions:** every question is reworded to be easier to read (for example, Gate 1 item 3 now asks *“Would you choose the same perforators for a conventional (open) harvest?”*). Each (?) explains what to consider and quotes the original framework wording, which is unchanged in `framework.js`, the rules and the exports.
+- **Compact layout:** answers are small buttons inline with each question (stacked under it on phones); a grade's description shows under the row once chosen, and every description is in the (?). CT values sit on the same line as their label, plan cards are smaller, and complexity and benefit now stack in one column.
+- **Early-stop summary:** when any Gate 1 item is *No*, the side shows a summary in place, with the items not met, the next step, an optional note, and print, copy-note and CSV buttons. The note and the failed items are included in the copied note, the CSV `rationale` column and the printed page.
+- **Next shows what is left:** each Next button shows how many required items are still missing on that step.
 - **Simpler flow:** three steps instead of six (Flap safety & CT measurements; Complexity & expected benefit; Plan & summary), so a case needs two Next presses instead of five. Complexity and benefit sit side by side on wide screens.
 - **Two tabs:** *Calculator* and *Evidence & About*. *How to measure* is now a slide-out guide opened from the CT measurements section; old `#how-to-measure`, `#evidence` and `#about` links still work.
 - **Citation hidden:** the manuscript is still under internal review, so the "How to cite" card, footer link, printed citation line and the article details in `CITATION.cff` are removed, and the tab is renamed *About*. Set `citation.show` in `framework.js` to restore them later.
