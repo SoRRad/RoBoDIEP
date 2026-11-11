@@ -503,7 +503,9 @@
       m: { A: '', C: '', course3d: '', paramuscular: false, arcuateRelation: null, arcuateMethod: null },
       cx: { config: null, courseOverride: null, route: null, access: null, team: null },
       benefitOverride: null,
-      plan: { selected: null, limiting: null, limitingOther: '', rationale: '' }
+      plan: { selected: null, limiting: null, limitingOther: '', rationale: '' },
+      // Free-text note recorded when Gate 1 stops the side (early-stop summary).
+      stopNote: ''
     };
   }
 
@@ -630,6 +632,12 @@
     return label;
   }
 
+  /** Short labels of the Gate 1 items answered No. */
+  function failedGateItems(side) {
+    return FW.gate1.items.filter(function (item) { return side.gate1[item.id] === 'no'; })
+      .map(function (item) { return item.short; });
+  }
+
   /** Plain-text structured note for one side (template in framework.js). */
   function noteForSide(side, opts) {
     var ev = evaluateSide(side, opts);
@@ -639,7 +647,10 @@
     lines.push(fill(N.gate, { status: FW.gate1.statusText[ev.gate] || notRecorded }));
 
     if (ev.gate === 'failed') {
+      lines.push(fill(N.notMet, { items: failedGateItems(side).join('; ') }));
       lines.push(FW.gate1.failMessage);
+      var stopNote = String(side.stopNote || '').replace(/\s+/g, ' ').trim();
+      if (stopNote) lines.push(fill(N.stopNote, { note: stopNote }));
       lines.push(fill(N.tool, { version: FW.version }));
       return lines.join('\n');
     }
@@ -729,6 +740,7 @@
 
     if (ev.gate === 'failed') {
       row.suggestion_reason = FW.gate1.failMessage;
+      row.rationale = csvSafeText(side.stopNote || '');
       return row;
     }
 
@@ -795,6 +807,7 @@
     suggestLimitingFactor: suggestLimitingFactor,
     createSide: createSide,
     evaluateSide: evaluateSide,
+    failedGateItems: failedGateItems,
     noteForSide: noteForSide,
     buildNote: buildNote,
     csvEscape: csvEscape,

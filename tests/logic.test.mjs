@@ -532,9 +532,21 @@ describe('Copy note', () => {
     assert.equal(L.noteForSide(side), [
       'ROBOTIC DIEP SELECTION – Left',
       'Gate 1 (flap safety): failed',
+      'Not met: Perforators adequate for the planned flap',
       FW.gate1.failMessage,
       'Tool: Robotic DIEP Selection Calculator v1.0.1; research use only.'
     ].join('\n'));
+  });
+
+  test('the early-stop note lists every failed item and the optional note', () => {
+    const side = fixedExample();
+    side.gate1.perforators = 'no';
+    side.gate1.notCompromised = 'no';
+    side.stopNote = '  Plan  SIEA flap\ninstead ';
+    const lines = L.noteForSide(side).split('\n');
+    assert.equal(lines[2], 'Not met: Perforators adequate for the planned flap; Perforator choice not compromised for robotic access');
+    assert.equal(lines[4], 'Note: Plan SIEA flap instead');
+    assert.deepEqual(L.failedGateItems(side), [FW.gate1.items[0].short, FW.gate1.items[2].short]);
   });
 
   test('the outside-typical-scenarios flag is carried into the note', () => {
@@ -623,6 +635,14 @@ describe('CSV export', () => {
     assert.equal(row[columns.indexOf('suggestion_reason')], FW.gate1.failMessage);
   });
 
+  test('a Gate 1 failure exports the early-stop note in the rationale column', () => {
+    const side = fixedExample();
+    side.gate1.flow = 'no';
+    side.stopNote = '=Consider SIEA';
+    const row = parseCsv(L.buildCSV([side], ''))[1];
+    assert.equal(row[columns.indexOf('rationale')], "'=Consider SIEA");
+  });
+
   test('one row per side', () => {
     const right = fixedExample();
     right.side = 'Right';
@@ -635,6 +655,24 @@ describe('CSV export', () => {
 /* ------------------------------------------------------------------------- */
 /* Framework strings: must match the specification word for word             */
 /* ------------------------------------------------------------------------- */
+
+describe('Plain-language questions', () => {
+  test('every Gate 1 item keeps its framework wording and adds a question, short label and explanation', () => {
+    FW.gate1.items.forEach((item) => {
+      ['text', 'question', 'short', 'explain'].forEach((k) => assert.ok(item[k] && item[k].length > 5, item.id + '.' + k));
+      assert.notEqual(item.question, item.text);
+    });
+  });
+
+  test('every input on screen has a plain question', () => {
+    const C = FW.ct;
+    [C.A, C.C, C.course3d, C.paramuscular, C.arcuateRelation, C.arcuateMethod].forEach((f) => assert.ok(f.question && f.explain, f.label));
+    Object.values(FW.complexity.domains).forEach((d) => assert.ok(d.question && d.explain, d.label));
+    assert.ok(FW.complexity.team.question && FW.benefit.question && FW.benefit.explain);
+    assert.deepEqual(Object.keys(C.arcuateMethod.short), Object.keys(C.arcuateMethod.options));
+    assert.ok(FW.plan.selectedQuestion && FW.plan.limitingQuestion && FW.plan.rationaleQuestion);
+  });
+});
 
 describe('Framework strings match the specification exactly', () => {
   test('safety and privacy', () => {

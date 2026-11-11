@@ -75,6 +75,11 @@ const FRAMEWORK = {
   sides: ['Left', 'Right'],
   sideLong: { Left: 'Left hemiabdomen', Right: 'Right hemiabdomen' },
   sideQuestion: 'Side assessed (hemiabdomen)',
+  sidePrompt: 'Which side are you assessing?',
+  sideExplain: 'The hemiabdomen whose perforators and deep inferior epigastric artery (DIEA) you are grading. To grade both, turn on “Assess both sides”.',
+
+  // Shown inside every (?) that explains a question, before the original wording.
+  frameworkWordingLabel: 'Framework wording',
 
   tabs: {
     calculator: 'Calculator',
@@ -101,12 +106,39 @@ const FRAMEWORK = {
   // Step 1
   gate1: {
     title: 'Gate 1 — Flap safety (hard stop)',
+    heading: 'Gate 1 · Flap safety',
+    headingTip: 'A hard stop. Answer for the flap you would raise conventionally. Any “No” stops this side: no grades or plan are produced. Any “Uncertain” lets you continue, but the suggestion becomes “Additional assessment needed”.',
+    // text: the framework wording (kept for traceability and shown in the (?)).
+    // question: the plain-language question shown on screen and in printouts.
+    // short: the label used where the failed items are listed.
     items: [
-      { id: 'perforators', text: 'Perforators adequate for the planned flap volume and territory' },
-      { id: 'flow', text: 'Arterial inflow and venous drainage judged adequate for the planned flap (vein caliber, SIEV, superficial–deep connection); unresolved concerns require reassessment' },
-      { id: 'notCompromised', text: 'Perforator selection not compromised solely to facilitate robotic harvest' }
+      {
+        id: 'perforators',
+        text: 'Perforators adequate for the planned flap volume and territory',
+        question: 'Will the chosen perforators reliably perfuse the flap volume and territory you need?',
+        short: 'Perforators adequate for the planned flap',
+        explain: 'Judge on the CT angiogram: perforator caliber, number and position relative to the perfusion zones the reconstruction needs.'
+      },
+      {
+        id: 'flow',
+        text: 'Arterial inflow and venous drainage judged adequate for the planned flap (vein caliber, SIEV, superficial–deep connection); unresolved concerns require reassessment',
+        question: 'Are arterial inflow and venous drainage adequate for the planned flap?',
+        short: 'Inflow and venous drainage adequate',
+        explain: 'Consider the venae comitantes caliber, a dominant superficial inferior epigastric vein (SIEV) and the superficial–deep venous connection. If a concern is still unresolved, answer “Uncertain” and reassess before planning the harvest.'
+      },
+      {
+        id: 'notCompromised',
+        text: 'Perforator selection not compromised solely to facilitate robotic harvest',
+        question: 'Would you choose the same perforators for a conventional (open) harvest?',
+        short: 'Perforator choice not compromised for robotic access',
+        explain: 'Answer “No” if a better-perfusing perforator would be passed over only because it is harder to reach robotically. Perfusion always comes before access.'
+      }
     ],
     answers: { yes: 'Yes', no: 'No', uncertain: 'Uncertain' },
+    stopTitle: 'Early stop: flap safety not established',
+    stopNotMet: 'Not met',
+    stopNoteLabel: 'Note',
+    stopNoteHint: 'Optional, for example the alternative plan. Do not enter patient identifiers.',
     failMessage: 'Reassess the flap and perforator plan. Consider conventional DIEP only if an adequately perfused alternative harvest is feasible; otherwise consider another reconstructive option.',
     uncertainReason: 'Flap safety not confirmed',
     statusText: { passed: 'passed', notConfirmed: 'not confirmed', failed: 'failed' }
@@ -118,26 +150,39 @@ const FRAMEWORK = {
     unit: 'cm',
     A: {
       label: 'A = intramuscular course, craniocaudal extent (projected on sagittal MIP)',
+      question: 'A · Intramuscular course',
+      explain: 'Craniocaudal extent of the perforator’s course through the rectus muscle, from where it passes under the anterior rectus sheath to where it leaves the deep surface of the muscle, projected on a sagittal MIP.',
       requirement: 'required unless the course is paramuscular/subfascial'
     },
     paramuscular: {
       label: 'Paramuscular or subfascial course',
+      question: 'No intramuscular segment (paramuscular or subfascial course)',
+      explain: 'Tick when the perforator runs around the edge of the rectus or just beneath the fascia instead of through the muscle.',
       hint: 'when checked, A may be 0 or blank and the course grade is Low'
     },
     C: {
       label: 'C = perforator to external iliac origin, craniocaudal projection, same projection and reference convention as A',
+      question: 'C · Perforator to DIEA origin',
+      explain: 'Craniocaudal distance from the perforator to the origin of the deep inferior epigastric artery from the external iliac artery, on the same sagittal projection and with the same reference points as A. It stands for the fascial exposure a conventional harvest of the pedicle needs.',
       requirement: 'required'
     },
     course3d: {
       label: '3D intramuscular course length (optional; recorded only, never used in calculations)',
+      question: '3D intramuscular course length',
+      explain: 'Optional. Recorded for reference only and never used in calculations.',
       help: 'Do not mix 3D length with the projected A.'
     },
     arcuateRelation: {
       label: 'Arcuate line relation of the predicted robotic incision',
+      question: 'Planned robotic incision vs. arcuate line',
+      explain: 'Where the predicted posterior-sheath incision lies relative to the arcuate line. Below the arcuate line there is no posterior rectus sheath. Recorded as a modifier when weighing the benefit; it does not change any grade.',
       options: { above: 'Above', crossing: 'Crossing', below: 'Below' }
     },
     arcuateMethod: {
       label: 'Arcuate line located by',
+      question: 'How was the arcuate line located?',
+      explain: 'Estimated means placed at one-third of the umbilicus–pubis distance when it cannot be seen. Choose “Indeterminate” if neither is possible; the suggestion then becomes “Additional assessment needed”.',
+      short: { identified: 'Seen on CT', estimated: 'Estimated', indeterminate: 'Indeterminate' },
       options: {
         identified: 'Identified on imaging',
         estimated: 'Estimated (one-third of the umbilicus–pubis distance)',
@@ -160,6 +205,8 @@ const FRAMEWORK = {
     domains: {
       config: {
         label: 'Required perforator configuration',
+        question: 'Perforator configuration',
+        explain: 'Arrangement of the perforators the flap needs. More fascial windows or separate DIEA trunks mean more intramuscular dissection.',
         short: 'configuration',
         descriptors: {
           low: 'All required perforators in one fascial window on one DIEA branch',
@@ -169,6 +216,8 @@ const FRAMEWORK = {
       },
       course: {
         label: 'Intramuscular course (A)',
+        question: 'Intramuscular course (A)',
+        explain: 'Auto-graded from A. 2.5 and 5 cm are reported research anchors, not validated boundaries. Override if the course is harder than its length suggests, for example a tortuous or branching course.',
         short: 'course',
         descriptors: {
           low: '≤2.5 cm, or paramuscular or subfascial',
@@ -179,8 +228,12 @@ const FRAMEWORK = {
       },
       access: {
         label: 'Access for the planned route (TAPP or TEP)',
+        question: 'Access for the planned route',
+        explain: 'How prior surgery, scar, mesh or adhesions affect the planned robotic route.',
         short: 'access',
         routeLabel: 'Planned route',
+        routeQuestion: 'Planned robotic route',
+        routeExplain: 'TAPP: transabdominal preperitoneal. TEP: totally extraperitoneal.',
         routes: { TAPP: 'TAPP', TEP: 'TEP' },
         descriptors: {
           low: 'No scar, mesh or suspected adhesions affecting the planned route',
@@ -193,6 +246,7 @@ const FRAMEWORK = {
     },
     team: {
       label: 'Team experience with robotic DIEP harvest',
+      question: 'Team experience with robotic DIEP',
       options: { established: 'Established', early: 'Early in program' },
       help: 'Published learning curves describe dissection time, not validated competence.'
     },
@@ -206,6 +260,8 @@ const FRAMEWORK = {
     title: 'Expected benefit',
     subtitle: 'Graded separately from complexity',
     domainLabel: 'Projected fascial saving (B = C − A)',
+    question: 'Benefit grade',
+    explain: 'B/C is the share of the conventional fascial exposure (C) that a robotic harvest would spare.',
     grades: { substantial: 'Substantial', moderate: 'Moderate', small: 'Small', na: 'Not assessable' },
     descriptors: {
       substantial: 'Most of the conventional exposure spared',
@@ -240,6 +296,10 @@ const FRAMEWORK = {
     smallBenefitFactor: 'Small expected benefit',
     selectedLabel: 'Selected plan',
     limitingLabel: 'Principal limiting factor',
+    selectedQuestion: 'Which plan do you choose?',
+    limitingQuestion: 'What mainly limits this case?',
+    limitingExplain: 'The one factor that most shaped your plan. Factors suggested from your grades are shown above the list; choose “Use” to pick one.',
+    rationaleQuestion: 'Why this plan?',
     limitingOrder: ['config', 'course', 'access', 'benefit', 'team', 'flapSafety', 'other'],
     limitingOptions: {
       config: 'Perforator configuration',
@@ -299,6 +359,8 @@ const FRAMEWORK = {
     note: {
       header: 'ROBOTIC DIEP SELECTION – {side}',
       gate: 'Gate 1 (flap safety): {status}',
+      notMet: 'Not met: {items}',
+      stopNote: 'Note: {note}',
       cta: 'CTA: A {A} cm{paramuscular} | C {C} cm | B {B} cm (B/C {ratio}) | 3D course {course3d} | Arcuate: {relation}, {method}',
       paramuscular: ' (paramuscular or subfascial)',
       complexity: 'Complexity: configuration {config}; course {course}; access{route} {access}',

@@ -621,6 +621,78 @@
     };
   }
 
+  /** Text for a (?) tip: the explanation, then the original framework wording. */
+  function tipText(explain, framework, extra) {
+    return [].concat(explain || [], extra || [],
+      framework ? FW.frameworkWordingLabel + ': “' + framework + '”' : []);
+  }
+
+  /**
+   * A compact question: the question text and its (?) on the left, small
+   * answer pills inline on the right (stacked on narrow screens). When options
+   * carry a `desc`, the description of the chosen answer shows under the row
+   * and every description is listed in the (?).
+   */
+  function question(cfg) {
+    const labelId = cfg.name + '-label';
+    const errId = cfg.name + '-error';
+    const descId = cfg.name + '-desc';
+    const descs = cfg.options.filter((o) => o.desc).map((o) => o.label + ': ' + o.desc);
+    const tipParts = tipText(cfg.explain, cfg.framework, descs);
+    const tipObj = tipParts.length ? tip(tipParts) : null;
+    const helpId = tipObj ? tipObj.id : null;
+    const inputs = [];
+    const list = h('div', { class: 'qopts', 'data-count': String(cfg.options.length) });
+    cfg.options.forEach((opt) => {
+      const id = cfg.name + '-' + opt.value;
+      const input = h('input', { type: 'radio', class: 'choice-input', name: cfg.name, id, value: opt.value });
+      input.addEventListener('change', () => { if (input.checked) cfg.onChange(opt.value); });
+      inputs.push(input);
+      list.append(h('label', { class: 'qopt', for: id, 'data-tone': opt.tone || null, 'data-value': opt.value, 'data-desc': opt.desc || null },
+        input,
+        h('span', { class: 'qopt-body' }, opt.glyph || null, h('span', { class: 'qopt-text' }, opt.label), opt.extra || null)));
+    });
+    const desc = h('p', { class: 'qdesc', id: descId, hidden: true });
+    const err = h('p', { class: 'field-error', id: errId, hidden: true });
+    const el = h('div', { class: 'q' + (cfg.cls ? ' ' + cfg.cls : ''), role: 'radiogroup', 'aria-labelledby': labelId },
+      h('div', { class: 'q-row' },
+        h('div', { class: 'q-head' },
+          cfg.num ? h('span', { class: 'gate-num', 'aria-hidden': 'true' }, cfg.num) : null,
+          h('span', { class: 'q-text' },
+            h('span', { class: 'q-label', id: labelId }, cfg.label),
+            cfg.headExtra ? [' ', cfg.headExtra] : null,
+            tipObj ? [' ', tipObj.el] : null)),
+        list),
+      desc,
+      cfg.after || null,
+      err);
+    const describe = () => {
+      const ids = [helpId, desc.hidden ? null : descId].filter(Boolean).join(' ');
+      if (ids) el.setAttribute('aria-describedby', ids); else el.removeAttribute('aria-describedby');
+    };
+    describe();
+    return {
+      el,
+      inputs,
+      setValue(value) {
+        inputs.forEach((input) => { input.checked = input.value === value; });
+        const opt = cfg.options.find((o) => o.value === value);
+        const text = opt && opt.desc ? opt.desc : '';
+        if (desc.textContent !== text) desc.textContent = text;
+        if (desc.hidden !== !text) { desc.hidden = !text; describe(); }
+      },
+      setError(message) { setFieldError(err, inputs, message, null); },
+      option(value) { return list.querySelector('[data-value="' + value + '"]'); },
+      focus() { (inputs.find((i) => i.checked) || inputs[0]).focus(); }
+    };
+  }
+
+  /** Small grade glyph for an answer pill: level bars, or an icon. */
+  function pillGlyph(kind, key) {
+    const level = LEVEL[kind] && LEVEL[kind][key];
+    return level ? levelIcon(level) : icon(GLYPH[key] || 'dot', 'qopt-icon');
+  }
+
   /** Text input with an optional unit suffix ("cm"). */
   function textField(cfg) {
     const input = h('input', {
@@ -919,39 +991,60 @@
 
     /* ---- Step 1: Gate 1 ---- */
     function step1() {
-      const sideGroup = state.bilateral ? null : choiceGroup({
-        name: pid + '-side', legend: FW.sideQuestion, variant: 'pills', cls: 'side-group',
+      const G = FW.gate1;
+      const sideGroup = state.bilateral ? null : question({
+        name: pid + '-side', label: FW.sidePrompt, explain: FW.sideExplain, cls: 'side-group',
         options: FW.sides.map((v) => ({ value: v, label: v })),
         onChange: (v) => { S().side = v; changed(); }
       });
-      const gates = FW.gate1.items.map((item, i) => choiceGroup({
-        name: pid + '-gate-' + item.id, variant: 'pills', cls: 'gate-item',
-        legend: [h('span', { class: 'gate-num', 'aria-hidden': 'true' }, String(i + 1)), h('span', { class: 'gate-text' }, item.text)],
+      const gates = G.items.map((item, i) => question({
+        name: pid + '-gate-' + item.id, cls: 'gate-item', num: String(i + 1),
+        label: item.question, explain: item.explain, framework: item.text,
         options: ['yes', 'no', 'uncertain'].map((v) => ({
-          value: v, label: FW.gate1.answers[v], iconName: GLYPH[v], tone: TONE.answer[v]
+          value: v, label: G.answers[v], glyph: icon(GLYPH[v], 'qopt-icon'), tone: TONE.answer[v]
         })),
         onChange: (v) => { S().gate1[item.id] = v; changed(); }
       }));
       const status = h('div', { class: 'gate-status' });
-      const docBtn = h('button', { type: 'button', class: 'btn btn-primary', hidden: true, on: { click: () => goStep(idx, 3) } },
-        h('span', null, 'Document this outcome'), icon('chevron-right'));
-      const sh = shell(1, FW.gate1.title, null,
-        [sideGroup ? sideGroup.el : null, h('div', { class: 'gate-list' }, gates.map((g) => g.el)), status],
-        { extra: docBtn, tip: 'Answer all three items. Any “No” stops the assessment for this side; any “Uncertain” lets you continue, but the suggestion becomes “' + FW.plan.plans.assess.label + '”.' });
+
+      /* Early-stop summary: shown in place when any item is answered No. */
+      const notMet = h('ul', { class: 'stop-list' });
+      const noteId = pid + '-stopnote';
+      const noteArea = h('textarea', {
+        id: noteId, class: 'textarea', rows: '2', maxlength: String(FW.plan.rationaleMax), autocomplete: 'off',
+        'aria-describedby': noteId + '-help'
+      });
+      noteArea.addEventListener('input', () => { S().stopNote = noteArea.value; changed(); });
+      const A = FW.summary.actions;
+      const mk = (iconName, text, handler, cls) => h('button', { type: 'button', class: 'btn btn-sm ' + cls, on: { click: handler } }, icon(iconName), text);
+      const stopButtons = [mk('print', A.print, doPrint, 'btn-primary'), mk('copy', A.copy, doCopy, 'btn-secondary'), mk('download', A.csv, doCsv, 'btn-secondary')];
+      const stopExportNote = h('p', { class: 'export-note', hidden: true }, icon('info', 'inline-icon'), 'Finish the other side to print or export both together.');
+      const stopCard = h('div', { class: 'stop-card', hidden: true, role: 'region', 'aria-label': G.stopTitle },
+        h('div', { class: 'stop-head' }, h('span', { class: 'stop-icon', 'aria-hidden': 'true' }, icon('x')),
+          h('div', null,
+            h('p', { class: 'stop-title', role: 'alert' }, G.stopTitle),
+            h('p', { class: 'stop-sub' }, 'No grades or plan are produced for this side. Change an answer to continue.'))),
+        h('div', { class: 'stop-grid' },
+          h('div', null, h('p', { class: 'stop-k' }, G.stopNotMet), notMet),
+          h('div', null, h('p', { class: 'stop-k' }, 'Next step'), h('p', { class: 'stop-text' }, G.failMessage))),
+        h('div', { class: 'field stop-note' },
+          h('label', { class: 'field-label', for: noteId }, G.stopNoteLabel, h('span', { class: 'field-req' }, ' (optional)')),
+          noteArea,
+          h('p', { class: 'field-help', id: noteId + '-help' }, icon('lock', 'inline-icon'), G.stopNoteHint)),
+        h('div', { class: 'actions actions-sm' }, stopButtons),
+        stopExportNote);
+
+      const sh = shell(1, G.heading, null,
+        [sideGroup ? sideGroup.el : null, h('div', { class: 'gate-list' }, gates.map((g) => g.el)), status, stopCard],
+        { tip: G.headingTip });
 
       function statusContent(ev) {
         if (ev.gate === 'passed') {
           return callout('good', 'check', 'Gate 1 passed', 'All three items answered Yes.');
         }
         if (ev.gate === 'notConfirmed') {
-          return callout('warn', 'question', FW.gate1.uncertainReason,
+          return callout('warn', 'question', G.uncertainReason,
             'You can continue. The suggestion will be “' + FW.plan.plans.assess.label + '”.');
-        }
-        if (ev.gate === 'failed') {
-          const box = callout('fail', 'x', 'Gate 1 failed: hard stop', FW.gate1.failMessage,
-            h('p', { class: 'callout-text callout-sub' }, 'Grades and a plan are not shown for this side. Change an answer to continue, or document this outcome.'));
-          box.setAttribute('role', 'alert');
-          return box;
         }
         return null;
       }
@@ -960,9 +1053,9 @@
         el: sh.el, heading: sh.heading,
         firstError() {
           if (sideGroup && !S().side) return sideGroup;
-          return gates.find((g, i) => !S().gate1[FW.gate1.items[i].id]);
+          return gates.find((g, i) => !S().gate1[G.items[i].id]);
         },
-        update(ev) {
+        update(ev, o) {
           const side = S();
           const errs = ev.steps[0].errors;
           if (sideGroup) {
@@ -970,12 +1063,21 @@
             sideGroup.setError(showError(side, 1, 'side') ? errs.side : null);
           }
           gates.forEach((g, i) => {
-            const id = FW.gate1.items[i].id;
+            const id = G.items[i].id;
             g.setValue(side.gate1[id]);
             g.setError(showError(side, 1, 'gate1.' + id) ? errs['gate1.' + id] : null);
           });
           renderOnce(status, ev.gate, () => statusContent(ev));
-          docBtn.hidden = !(ev.gate === 'failed' && ev.reachable[5]);
+          const failed = ev.gate === 'failed';
+          stopCard.hidden = !failed;
+          if (!failed) return;
+          renderOnce(notMet, L.failedGateItems(side), () => L.failedGateItems(side).map((t) => h('li', null, icon('x', 'inline-icon'), t)));
+          if (o.syncInputs || document.activeElement !== noteArea) {
+            if (noteArea.value !== side.stopNote) noteArea.value = side.stopNote;
+          }
+          const ready = state.sides.map(evalSide).every((e) => e.exportable);
+          stopButtons.forEach((b) => { b.disabled = !ready; });
+          stopExportNote.hidden = ready;
         }
       };
     }
@@ -984,34 +1086,38 @@
     function step2() {
       const C = FW.ct;
       const fA = textField({
-        id: pid + '-A', label: C.A.label, tip: L.capitalize(C.A.requirement) + '.', unit: C.unit, inputmode: 'decimal', cls: 'field-num',
+        id: pid + '-A', label: C.A.question, unit: C.unit, inputmode: 'decimal', cls: 'field-num field-inline',
+        tip: tipText(C.A.explain, C.A.label, L.capitalize(C.A.requirement) + '.'),
         onInput: (v) => { S().m.A = v; changed(); },
         onBlur: (v) => { if (v.trim()) touch('A'); }
       });
       const para = checkboxField({
-        id: pid + '-para', label: C.paramuscular.label, tip: L.capitalize(C.paramuscular.hint) + '.',
+        id: pid + '-para', label: C.paramuscular.question,
+        tip: tipText(C.paramuscular.explain, C.paramuscular.label, L.capitalize(C.paramuscular.hint) + '.'),
         onChange: (v) => { S().m.paramuscular = v; changed(); }
       });
       const fC = textField({
-        id: pid + '-C', label: C.C.label, unit: C.unit, inputmode: 'decimal', cls: 'field-num',
+        id: pid + '-C', label: C.C.question, unit: C.unit, inputmode: 'decimal', cls: 'field-num field-inline',
+        tip: tipText(C.C.explain, C.C.label),
         onInput: (v) => { S().m.C = v; changed(); },
         onBlur: (v) => { if (v.trim()) touch('C'); }
       });
       const f3 = textField({
-        id: pid + '-3d', label: C.course3d.label, tip: C.course3d.help, unit: C.unit, inputmode: 'decimal', cls: 'field-num',
+        id: pid + '-3d', label: C.course3d.question, req: '(optional)', unit: C.unit, inputmode: 'decimal', cls: 'field-num field-inline',
+        tip: tipText(C.course3d.explain, C.course3d.label, C.course3d.help),
         onInput: (v) => { S().m.course3d = v; changed(); },
         onBlur: (v) => { if (v.trim()) touch('course3d'); }
       });
-      const rel = choiceGroup({
-        name: pid + '-rel', legend: C.arcuateRelation.label, variant: 'pills',
+      const relOptional = h('p', { class: 'field-help', hidden: true }, 'Not required when the arcuate line is indeterminate.');
+      const rel = question({
+        name: pid + '-rel', label: C.arcuateRelation.question, explain: C.arcuateRelation.explain, framework: C.arcuateRelation.label,
         options: Object.keys(C.arcuateRelation.options).map((k) => ({ value: k, label: C.arcuateRelation.options[k] })),
+        after: relOptional,
         onChange: (v) => { S().m.arcuateRelation = v; changed(); }
       });
-      const relOptional = h('p', { class: 'field-help', hidden: true }, 'Not required when the arcuate line is indeterminate.');
-      rel.el.append(relOptional);
-      const meth = choiceGroup({
-        name: pid + '-meth', legend: C.arcuateMethod.label, variant: 'list',
-        options: Object.keys(C.arcuateMethod.options).map((k) => ({ value: k, label: C.arcuateMethod.options[k] })),
+      const meth = question({
+        name: pid + '-meth', label: C.arcuateMethod.question, explain: C.arcuateMethod.explain, framework: C.arcuateMethod.label,
+        options: Object.keys(C.arcuateMethod.options).map((k) => ({ value: k, label: C.arcuateMethod.short[k] })),
         onChange: (v) => { S().m.arcuateMethod = v; changed(); }
       });
 
@@ -1022,19 +1128,20 @@
       const bar = segBar();
       const meter = ratioMeter(false);
       const calcCard = h('div', { class: 'calc' },
-        h('p', { class: 'calc-kicker' }, h('span', { class: 'pulse', 'aria-hidden': 'true' }), 'Calculated live'),
+        h('p', { class: 'calc-kicker' }, h('span', { class: 'pulse', 'aria-hidden': 'true' }), 'Calculated live',
+          tip(C.surrogateLabel, 'About B and B/C').el),
         h('div', { class: 'calc-grid' },
           h('div', { class: 'calc-item' }, h('span', { class: 'calc-label' }, C.B.label), bOut),
           h('div', { class: 'calc-item' }, h('span', { class: 'calc-label' }, C.ratio.label), rOut)),
-        h('p', { class: 'surrogate' }, icon('info', 'inline-icon'), C.surrogateLabel),
         empty, bar.el, meter.el);
 
-      const sh = shell(2, C.title, 'Values in cm with one decimal place.', [
+      const sh = shell(2, C.title, null, [
         h('div', { class: 'split' },
-          h('div', { class: 'stack' }, fA.el, para.el, fC.el, f3.el, rel.el, meth.el),
-          h('div', { class: 'split-aside' }, calcCard))
+          h('div', { class: 'stack stack-tight' }, fA.el, para.el, fC.el, f3.el),
+          h('div', { class: 'split-aside' }, calcCard)),
+        h('div', { class: 'q-list' }, rel.el, meth.el)
       ], {
-        tip: C.help,
+        tip: ['Values in cm with one decimal place.', C.help],
         headExtra: h('button', { type: 'button', class: 'guide-btn', 'aria-haspopup': 'dialog', on: { click: openGuide } },
           icon('ruler'), FW.measure.title)
       });
@@ -1082,10 +1189,11 @@
     function step3() {
       const D = FW.complexity.domains;
       const gradeOptions = (domain, keys) => keys.map((k) => ({
-        value: k, chip: chip('cx', k), desc: (D[domain] && D[domain].descriptors[k]) || '', tone: TONE.cx[k]
+        value: k, label: L.complexityLabel(k), glyph: pillGlyph('cx', k),
+        desc: (D[domain] && D[domain].descriptors[k]) || '', tone: TONE.cx[k]
       }));
-      const config = choiceGroup({
-        name: pid + '-config', legend: D.config.label, cls: 'domain',
+      const config = question({
+        name: pid + '-config', label: D.config.question, explain: D.config.explain, framework: D.config.label,
         options: gradeOptions('config', ['low', 'moderate', 'high', 'na']),
         onChange: (v) => { S().cx.config = v; changed(); }
       });
@@ -1096,9 +1204,9 @@
         type: 'button', class: 'btn-link', hidden: true,
         on: { click: () => { S().cx.courseOverride = null; changed(); } }
       }, icon('refresh'), 'Reset to auto');
-      const course = choiceGroup({
-        name: pid + '-course', legend: [D.course.label, ' ', courseTag], cls: 'domain',
-        before: courseNote, after: courseReset,
+      const course = question({
+        name: pid + '-course', label: D.course.question, explain: D.course.explain, headExtra: courseTag,
+        after: h('div', { class: 'q-after' }, courseNote, courseReset),
         options: gradeOptions('course', ['low', 'moderate', 'high', 'na']),
         onChange: (v) => {
           const auto = evalSide(S()).courseAuto;
@@ -1107,31 +1215,32 @@
         }
       });
 
-      const route = choiceGroup({
-        name: pid + '-route', legend: D.access.routeLabel, variant: 'pills', cls: 'route-group',
+      const routeNote = h('p', { class: 'field-help', hidden: true }, 'No route is needed when no robotic route is feasible.');
+      const route = question({
+        name: pid + '-route', label: D.access.routeQuestion, explain: D.access.routeExplain, cls: 'route-group',
         options: Object.keys(D.access.routes).map((k) => ({ value: k, label: D.access.routes[k] })),
+        after: routeNote,
         onChange: (v) => { S().cx.route = v; changed(); }
       });
-      const routeNote = h('p', { class: 'field-help', hidden: true }, 'No route is needed when no robotic route is feasible.');
-      route.el.append(routeNote);
-      const access = choiceGroup({
-        name: pid + '-access', legend: D.access.label, cls: 'domain', before: route.el, tip: D.access.help,
+      const access = question({
+        name: pid + '-access', label: D.access.question, explain: [D.access.explain, D.access.help], framework: D.access.label,
         options: gradeOptions('access', ['low', 'moderate', 'high']).concat([
-          { value: 'none', chip: chip('cx', 'none'), tone: 'none' },
-          { value: 'na', chip: chip('cx', 'na'), tone: 'na' }
+          { value: 'none', label: 'No feasible route', glyph: pillGlyph('cx', 'none'), tone: 'none', desc: D.access.noRoute },
+          { value: 'na', label: L.complexityLabel('na'), glyph: pillGlyph('cx', 'na'), tone: 'na' }
         ]),
         onChange: (v) => { S().cx.access = v; changed(); }
       });
 
-      const team = choiceGroup({
-        name: pid + '-team', legend: FW.complexity.team.label, variant: 'pills', cls: 'domain',
-        tip: FW.complexity.team.help,
-        options: Object.keys(FW.complexity.team.options).map((k) => ({ value: k, label: FW.complexity.team.options[k] })),
+      const T = FW.complexity.team;
+      const team = question({
+        name: pid + '-team', label: T.question, explain: T.help, framework: T.label,
+        options: Object.keys(T.options).map((k) => ({ value: k, label: T.options[k] })),
         onChange: (v) => { S().cx.team = v; changed(); }
       });
 
-      const sh = shell(3, FW.complexity.title, FW.complexity.subtitle,
-        [config.el, course.el, access.el, team.el], { tip: FW.benefit.notAssessableRule });
+      const sh = shell(3, FW.complexity.title, null,
+        h('div', { class: 'q-list' }, config.el, course.el, route.el, access.el, team.el),
+        { tip: [FW.complexity.subtitle + '.', FW.benefit.notAssessableRule] });
 
       return {
         el: sh.el, heading: sh.heading,
@@ -1182,21 +1291,22 @@
         type: 'button', class: 'btn-link', hidden: true,
         on: { click: () => { S().benefitOverride = null; changed(); } }
       }, icon('refresh'), 'Reset to suggested');
-      const group = choiceGroup({
-        name: pid + '-benefit', legend: [B.domainLabel, ' ', benefitTag], cls: 'domain',
-        before: meter.el, after: reset, tip: B.suggestedLabel,
+      const modifier = h('div', { class: 'modifier' });
+      const group = question({
+        name: pid + '-benefit', label: B.question, headExtra: benefitTag,
+        explain: [B.explain, B.suggestedLabel], framework: B.domainLabel,
         options: ['substantial', 'moderate', 'small', 'na'].map((k) => ({
-          value: k, chip: chip('benefit', k), desc: B.descriptors[k] || '', tone: TONE.benefit[k],
-          extra: h('span', { class: 'sug-badge', hidden: true }, icon('sparkle'), B.tags.suggested)
+          value: k, label: L.benefitLabel(k), glyph: pillGlyph('benefit', k), desc: B.descriptors[k] || '', tone: TONE.benefit[k]
         })),
+        after: h('div', { class: 'q-after' }, reset),
         onChange: (v) => {
           const suggested = evalSide(S()).benefitSuggested;
           S().benefitOverride = v === suggested ? null : v;
           changed();
         }
       });
-      const modifier = h('div', { class: 'modifier' });
-      const sh = shell(4, B.title, B.subtitle, [group.el, modifier], { tip: B.notAssessableRule });
+      const sh = shell(4, B.title, null, [meter.el, h('div', { class: 'q-list' }, group.el), modifier],
+        { tip: [B.subtitle + '.', B.notAssessableRule] });
 
       return {
         el: sh.el, heading: sh.heading,
@@ -1210,15 +1320,15 @@
           benefitTag.hidden = !ev.benefitSource;
           reset.hidden = ev.benefitSource !== 'overridden';
           ['substantial', 'moderate', 'small', 'na'].forEach((k) => {
-            group.option(k).querySelector('.sug-badge').hidden = k !== ev.benefitSuggested;
+            group.option(k).classList.toggle('is-suggested', k === ev.benefitSuggested);
           });
           renderOnce(modifier, [side.m.arcuateRelation, side.m.arcuateMethod], () => {
             const rel = side.m.arcuateRelation ? FW.ct.arcuateRelation.options[side.m.arcuateRelation] : 'Not recorded';
             const meth = side.m.arcuateMethod ? FW.ct.arcuateMethod.options[side.m.arcuateMethod] : '';
-            return h('div', { class: 'modifier-card' },
-              h('p', { class: 'modifier-label' }, B.arcuateModifierLabel),
+            return h('div', { class: 'modifier-card' + (ev.arcuateBelow ? ' is-flagged' : '') },
+              h('p', { class: 'modifier-label' }, B.arcuateModifierLabel, ev.arcuateBelow ? null : tip(B.arcuateNote, 'About the arcuate line').el),
               h('p', { class: 'modifier-value' }, h('strong', null, rel), meth ? ' · ' + meth : ''),
-              ev.arcuateBelow ? callout('info', 'info', null, B.arcuateNote) : null);
+              ev.arcuateBelow ? h('p', { class: 'modifier-note' }, icon('info', 'inline-icon'), B.arcuateNote) : null);
           });
         }
       };
@@ -1232,7 +1342,7 @@
 
       const planGroup = choiceGroup({
         name: pid + '-plan', variant: 'plans', cls: 'plans-group', tip: P.footnote,
-        legend: [P.selectedLabel, h('span', { class: 'field-req' }, ' (required)')],
+        legend: [P.selectedQuestion, h('span', { class: 'field-req' }, ' (required)')],
         before: h('p', { class: 'group-note' }, icon('pencil', 'inline-icon'), FW.finalPlanNote),
         options: P.order.map((k) => ({
           value: k, tone: 'plan',
@@ -1261,7 +1371,9 @@
         onBlur: () => touch('limitingOther')
       });
       const limField = h('div', { class: 'field' },
-        h('label', { class: 'field-label', for: pid + '-lim' }, P.limitingLabel, h('span', { class: 'field-req' }, ' (required)')),
+        h('div', { class: 'field-head' },
+          h('label', { class: 'field-label', for: pid + '-lim' }, P.limitingQuestion, h('span', { class: 'field-req' }, ' (required)')),
+          tip(tipText(P.limitingExplain, null, FW.frameworkWordingLabel + ': “' + P.limitingLabel + '”')).el),
         limSuggest,
         h('div', { class: 'select-wrap' }, select, icon('chevron-down', 'select-caret')),
         limErr,
@@ -1276,7 +1388,7 @@
       const ratErr = h('p', { class: 'field-error', id: pid + '-rat-error', hidden: true });
       const ratHelpId = pid + '-rat-help';
       const ratField = h('div', { class: 'field' },
-        h('label', { class: 'field-label', for: pid + '-rat' }, P.rationaleLabel, ratReq),
+        h('label', { class: 'field-label', for: pid + '-rat' }, P.rationaleQuestion, ratReq),
         ta,
         h('div', { class: 'field-meta' },
           h('p', { class: 'field-help', id: ratHelpId }, icon('lock', 'inline-icon'), FW.caseLabel.hint, ' Up to ' + P.rationaleMax + ' characters.'),
@@ -1435,7 +1547,9 @@
         : h('span', { class: 'nav-spacer' });
       const next = k < STEP_COUNT
         ? h('button', { type: 'button', class: 'btn btn-primary btn-next', on: { click: () => goNext(idx) } },
-          h('span', null, 'Next: ' + FW.pages[k]), icon('chevron-right'))
+          h('span', null, 'Next', h('span', { class: 'next-title' }, ': ' + FW.pages[k])),
+          h('span', { class: 'next-left', hidden: true }),
+          icon('chevron-right'))
         : null;
       const secs = PAGE_SECTIONS[i].map((n) => blocks[n - 1]);
       const el = h('section', { class: 'step card page-' + k, 'aria-labelledby': headingId, 'data-page': String(k), hidden: true },
@@ -1469,6 +1583,19 @@
       blocks[1].el.hidden = failed; // CT measurements
       blocks[4].el.hidden = failed; // integrated plan
       pages[0].next.hidden = failed;
+      // "N left" on each Next button: required items still missing or invalid on that page.
+      pages.forEach((pg, i) => {
+        if (!pg.next) return;
+        const left = PAGE_SECTIONS[i].filter((n) => n <= 5)
+          .reduce((sum, n) => sum + Object.keys(ev.steps[n - 1].errors).length, 0);
+        const badge = pg.next.querySelector('.next-left');
+        const text = left ? String(left) : '';
+        if (badge.dataset.n !== text) {
+          badge.dataset.n = text;
+          badge.replaceChildren(text, h('span', { class: 'sr-only' }, left === 1 ? ' item' : ' items'), ' left');
+        }
+        badge.hidden = !left;
+      });
       const prog = stepStatuses(side, ev);
       stepButtons.forEach((btn, i) => {
         const k = i + 1;
@@ -1516,7 +1643,7 @@
   /* ======================================================================= */
 
   function stripUi(side) {
-    return { side: side.side, gate1: side.gate1, m: side.m, cx: side.cx, benefitOverride: side.benefitOverride, plan: side.plan };
+    return { side: side.side, gate1: side.gate1, m: side.m, cx: side.cx, benefitOverride: side.benefitOverride, plan: side.plan, stopNote: side.stopNote };
   }
 
   function dlRow(label, value) {
@@ -1536,7 +1663,7 @@
     const gate = h('section', { class: 'sum-section' },
       h('h4', null, 'Gate 1 (flap safety)', ' ', chip('gate', ev.gate === 'incomplete' ? 'incomplete' : ev.gate, 'chip-sm')),
       h('ul', { class: 'sum-gate' }, FW.gate1.items.map((item) => h('li', null,
-        h('span', { class: 'sum-gate-text' }, item.text),
+        h('span', { class: 'sum-gate-text' }, item.question),
         chip('answer', side.gate1[item.id], 'chip-sm')))));
 
     if (ev.status === 'inProgress') {
@@ -1548,9 +1675,13 @@
         }, 'Continue at Step ' + sectionPage(ev.firstIncompleteStep), icon('chevron-right')));
     }
     if (ev.status === 'failed') {
+      const stopNote = String(side.stopNote || '').trim();
       return h('article', { class: 'sum-card is-failed' }, head, gate,
-        callout('fail', 'x', 'Reassess', FW.gate1.failMessage),
-        h('p', { class: 'sum-muted' }, 'No grades or plan are shown for this side.'));
+        callout('fail', 'x', FW.gate1.stopTitle,
+          FW.gate1.stopNotMet + ': ' + L.failedGateItems(side).join('; ') + '.',
+          h('p', { class: 'callout-text' }, h('strong', null, 'Next step: '), FW.gate1.failMessage)),
+        stopNote ? h('dl', { class: 'sum-dl' }, dlRow(FW.gate1.stopNoteLabel, h('span', { class: 'pre' }, stopNote))) : null,
+        h('p', { class: 'sum-muted' }, 'No grades or plan are produced for this side.'));
     }
 
     const ct = h('section', { class: 'sum-section' }, h('h4', null, C.title),
