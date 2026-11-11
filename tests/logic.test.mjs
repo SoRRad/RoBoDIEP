@@ -644,7 +644,8 @@ describe('Framework strings match the specification exactly', () => {
     assert.equal(FW.caseLabel.hint, 'Do not enter patient identifiers.');
     assert.equal(FW.privacy, 'All calculations run in your browser; nothing is stored or sent');
     assert.equal(FW.bilateralToggle, 'Assess both sides');
-    assert.deepEqual({ ...FW.tabs }, { calculator: 'Calculator', measure: 'How to measure', evidence: 'Evidence', about: 'About' });
+    assert.deepEqual({ ...FW.tabs }, { calculator: 'Calculator', info: 'Evidence & About' });
+    assert.equal(FW.pages.length, 3);
   });
 
   test('Step 1, Gate 1', () => {

@@ -1689,7 +1689,7 @@ img {
 /* Stepper */
 .stepper-list {
   display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   margin: 0;
   padding: 0;
   list-style: none;
@@ -4539,6 +4539,169 @@ body {
 
 
 /* ========================================================================= */
+/* Three-page flow: two sections per page, slide-out measuring guide         */
+/* ========================================================================= */
+
+.page-body {
+  display: grid;
+  gap: 30px;
+}
+
+.page-body > .block + .block:not([hidden]) {
+  padding-top: 30px;
+  border-top: 1px solid var(--border);
+}
+
+.block-head {
+  margin-bottom: 18px;
+}
+
+.block-head .step-title-row {
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.block-title {
+  color: var(--ink);
+  font-family: var(--serif);
+  font-size: 21px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+@media (min-width: 768px) {
+  .block-title {
+    font-size: 23px;
+  }
+}
+
+.block-title:focus {
+  outline: none;
+}
+
+.block-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 16px;
+}
+
+/* Complexity and benefit side by side when there is room */
+@media (min-width: 1280px) {
+  .page-body-2 {
+    grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+    align-items: start;
+    column-gap: 32px;
+  }
+
+  .page-body-2 > .block + .block:not([hidden]) {
+    padding-top: 0;
+    padding-left: 32px;
+    border-top: 0;
+    border-left: 1px solid var(--border);
+  }
+
+  .page-body-2 .choices-cards .choice-body {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+
+  .page-body-2 .choices-cards .chip {
+    min-width: 0;
+  }
+}
+
+.guide-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 40px;
+  margin-left: auto;
+  padding: 0 14px;
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--primary-text);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.guide-btn:hover {
+  border-color: var(--primary-ring);
+  background: var(--navy-soft);
+}
+
+.guide-btn .icon {
+  width: 17px;
+  height: 17px;
+}
+
+dialog.drawer {
+  width: min(780px, 100%);
+  max-width: 100%;
+  height: 100%;
+  max-height: 100%;
+  margin: 0 0 0 auto;
+  padding: 0;
+  border: 0;
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: var(--shadow-lg);
+}
+
+dialog.drawer::backdrop {
+  background: rgba(8, 16, 28, 0.45);
+}
+
+.drawer-head {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 20px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+}
+
+.drawer-title {
+  font-family: var(--serif);
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.drawer-intro {
+  margin-top: 4px;
+  color: var(--ink-3);
+  font-size: 14px;
+}
+
+.drawer-body {
+  padding: 20px 20px 32px;
+}
+
+.drawer .measure-grid {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.drawer .measure-grid > *,
+.drawer .schematic {
+  min-width: 0;
+}
+
+dialog.drawer {
+  overflow-x: hidden;
+}
+
+.info-about {
+  padding-top: 8px;
+}
+
+
+/* ========================================================================= */
 
 @media (prefers-reduced-motion: reduce) {
   *,
@@ -4649,6 +4812,7 @@ body {
   .site-header,
   .toast,
   .dialog,
+  .drawer,
   .panel,
   .case-bar,
   .side-switch,
