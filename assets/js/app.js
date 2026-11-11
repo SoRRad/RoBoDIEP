@@ -532,7 +532,7 @@
         h('p', null, h('span', { class: 'footer-k' }, 'Authors: '), authorLine()),
         h('p', null, '© ' + FW.meta.copyrightYear + ' ' + FW.meta.authors.join(' and ') + '. Code: ' + lic.code + '. Clinical text and figures: ' + lic.content + '.'),
         h('p', { class: 'footer-links' },
-          h('a', { href: '#about' }, 'How to cite'), ' · ',
+          L.citationText() ? [h('a', { href: '#about' }, 'How to cite'), ' · '] : null,
           extLink(FW.meta.issuesUrl, FW.about.reportIssue), ' · ',
           extLink(FW.meta.repoUrl, 'Source code'), ' · ',
           extLink(FW.meta.changelogUrl, 'Changelog')),
@@ -1603,7 +1603,7 @@
         sumCard(side, ev, i, true),
         h('footer', { class: 'pp-foot' },
           h('p', null, h('strong', null, 'Disclaimer: '), FW.disclaimer),
-          h('p', null, h('strong', null, 'Cite: '), L.citationText()),
+          L.citationText() ? h('p', null, h('strong', null, 'Cite: '), L.citationText()) : null,
           h('p', null, FW.privacy + '. ' + FW.meta.siteUrl)));
     }));
   }
@@ -2085,12 +2085,11 @@
           h('h3', { class: 'card-title' }, T.privacy),
           h('p', { class: 'privacy-line' }, icon('lock', 'inline-icon'), h('strong', null, FW.privacy + '.')),
           h('ul', { class: 'bullets' }, A.privacyDetails.map((t) => h('li', null, t)))),
-        h('section', { class: 'card pad' },
+        citation ? h('section', { class: 'card pad' },
           h('h3', { class: 'card-title' }, T.cite),
           h('p', { class: 'cite-box' }, citation),
-          h('div', { class: 'row-actions' }, copyBtn),
-          h('p', { class: 'muted' }, 'Calculator version ' + FW.version + ' (framework dated ' + FW.date + '). Machine-readable citation: CITATION.cff in the repository.')),
-        h('section', { class: 'card pad' },
+          h('div', { class: 'row-actions' }, copyBtn)) : null,
+        h('section', { class: 'card pad' + (citation ? '' : ' is-wide') },
           h('h3', { class: 'card-title' }, T.version),
           h('dl', { class: 'sum-dl' },
             dlRow('Version', FW.version + ' (' + FW.date + ')'),

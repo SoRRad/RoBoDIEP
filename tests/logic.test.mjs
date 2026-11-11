@@ -644,7 +644,7 @@ describe('Framework strings match the specification exactly', () => {
     assert.equal(FW.caseLabel.hint, 'Do not enter patient identifiers.');
     assert.equal(FW.privacy, 'All calculations run in your browser; nothing is stored or sent');
     assert.equal(FW.bilateralToggle, 'Assess both sides');
-    assert.deepEqual({ ...FW.tabs }, { calculator: 'Calculator', measure: 'How to measure', evidence: 'Evidence', about: 'About & cite' });
+    assert.deepEqual({ ...FW.tabs }, { calculator: 'Calculator', measure: 'How to measure', evidence: 'Evidence', about: 'About' });
   });
 
   test('Step 1, Gate 1', () => {
@@ -777,8 +777,9 @@ describe('Framework strings match the specification exactly', () => {
     assert.ok(FW.complexity.domains.course.descriptors.low.startsWith('≤'), '≤ U+2264');
   });
 
-  test('the citation shows publication pending until details are added', () => {
-    assert.equal(L.citationText(), 'Shahriarirad R, Vijayasekaran A. Patient Selection for Robotic-Assisted DIEP Flap Harvest Using Preoperative CT Angiography: A Systematic Review With Exploratory Meta-analysis and a Proposed Selection Framework. Plast Reconstr Surg Glob Open. Publication pending.');
+  test('the article citation stays hidden until it is switched on', () => {
+    assert.equal(FW.citation.show, false);
+    assert.equal(L.citationText(), '');
   });
 
   test('the framework is frozen', () => {

@@ -8,7 +8,7 @@ The following content is licensed under the Creative Commons Attribution 4.0 Int
 - The schematic `assets/img/measurements.svg`.
 - The documentation in `README.md` and `CHANGELOG.md`.
 
-**Attribution:** cite the article listed under "Cite" in `README.md` (also in `CITATION.cff`), and link to https://github.com/SoRRad/RoBoDIEP.
+**Attribution:** credit Reza Shahriarirad and Aparna Vijayasekaran, and link to https://github.com/SoRRad/RoBoDIEP.
 
 The Inter typeface embedded in `assets/css/fonts.css` is © The Inter Project Authors and licensed under the SIL Open Font License 1.1 (`assets/fonts/Inter-OFL.txt`).
 

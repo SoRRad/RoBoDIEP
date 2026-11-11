@@ -769,13 +769,14 @@
   /* Citation                                                                 */
   /* ----------------------------------------------------------------------- */
 
+  /** Citation text, or '' while the citation is hidden (citation.show false). */
   function citationText() {
     var c = FW.citation;
-    var head = c.authors + '. ' + c.title + '. ' + c.journal + '. ';
-    if (c.yearVolumeArticle) {
-      return head + c.yearVolumeArticle + '.' + (c.doi ? ' doi:' + c.doi : '');
-    }
-    return head + c.pendingText;
+    if (!c.show || !c.title) return '';
+    var parts = [c.authors, c.title, c.journal].filter(Boolean).join('. ') + '.';
+    if (c.yearVolumeArticle) parts += ' ' + c.yearVolumeArticle + '.';
+    if (c.doi) parts += ' doi:' + c.doi;
+    return parts;
   }
 
   return Object.freeze({
