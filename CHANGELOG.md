@@ -6,6 +6,8 @@ All notable changes are recorded here. The version matches `version` in `assets/
 
 ### Changed
 
+- **Simpler flow:** three steps instead of six (Flap safety & CT measurements; Complexity & expected benefit; Plan & summary), so a case needs two Next presses instead of five. Complexity and benefit sit side by side on wide screens.
+- **Two tabs:** *Calculator* and *Evidence & About*. *How to measure* is now a slide-out guide opened from the CT measurements section; old `#how-to-measure`, `#evidence` and `#about` links still work.
 - **Citation hidden:** the manuscript is still under internal review, so the "How to cite" card, footer link, printed citation line and the article details in `CITATION.cff` are removed, and the tab is renamed *About*. Set `citation.show` in `framework.js` to restore them later.
 - **Design refresh:** Inter typeface (bundled, no external requests), a calmer type scale, a clean white header with underlined tabs, and dividers instead of nested boxes.
 - **(?) tips:** help text and notes now sit behind a (?) that opens on hover, keyboard focus or tap. Grade descriptors, the disclaimer, the Gate 1 stop message, every "Suggestion (unvalidated)" label and the intraoperative override stay visible.

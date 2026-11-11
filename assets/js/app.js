@@ -19,7 +19,10 @@
   }
 
   const SVGNS = 'http://www.w3.org/2000/svg';
-  const STEP_COUNT = FW.steps.length;
+  const STEP_COUNT = FW.pages.length; // 3 pages shown to the user
+  // Each page holds two of the six logical sections from logic.js.
+  const PAGE_SECTIONS = [[1, 2], [3, 4], [5, 6]];
+  const sectionPage = (n) => (n <= 2 ? 1 : n <= 4 ? 2 : 3);
   const mq = (q) => (window.matchMedia ? window.matchMedia(q) : { matches: false, addEventListener() {} });
   const reduceMotion = mq('(prefers-reduced-motion: reduce)');
   const desktop = mq('(min-width: 1024px)');
@@ -278,19 +281,30 @@
     return side;
   }
 
-  /** Per-step display status for the stepper and the progress ring. */
+  /** Whether every input section on page k is valid. */
+  function pageValid(ev, k) {
+    return PAGE_SECTIONS[k - 1].filter((n) => n <= 5).every((n) => ev.steps[n - 1].valid);
+  }
+
+  /** Whether page k can be opened (logic reachability of its first section). */
+  function pageReachable(ev, k) {
+    if (k === 1) return true;
+    if (k === 2) return ev.reachable[2];
+    return ev.reachable[4] || ev.reachable[5];
+  }
+
+  /** Per-page display status for the stepper and the progress ring. */
   function stepStatuses(side, ev) {
-    const statuses = FW.steps.map((title, i) => {
-      const n = i + 1;
-      const open = ev.reachable[i] && n <= side.ui.maxStep + 1;
-      if (n === 1 && ev.gate === 'failed') return 'failed';
-      if (n <= 5 && ev.steps[i].valid && ev.reachable[i] && n <= side.ui.maxStep) {
-        return n === 1 && ev.gate === 'notConfirmed' ? 'warn' : 'done';
+    const statuses = FW.pages.map((title, i) => {
+      const k = i + 1;
+      if (k === 1 && ev.gate === 'failed') return 'failed';
+      if (pageReachable(ev, k) && pageValid(ev, k) && k <= side.ui.maxStep && !(k === 3 && ev.gate === 'failed')) {
+        return k === 1 && ev.gate === 'notConfirmed' ? 'warn' : 'done';
       }
-      if (n === 6 && ev.gate === 'failed' && ev.reachable[5]) return 'open';
-      return open ? 'open' : 'locked';
+      if (k === 3 && ev.gate === 'failed' && ev.reachable[5]) return 'open';
+      return pageReachable(ev, k) && k <= side.ui.maxStep + 1 ? 'open' : 'locked';
     });
-    const completed = statuses.slice(0, 5).filter((st) => st === 'done' || st === 'warn').length;
+    const completed = statuses.filter((st) => st === 'done' || st === 'warn').length;
     return { statuses, completed };
   }
 
@@ -389,9 +403,7 @@
     printRoot: byId('print-root'),
     panels: {
       calculator: byId('panel-calculator'),
-      measure: byId('panel-measure'),
-      evidence: byId('panel-evidence'),
-      about: byId('panel-about')
+      info: byId('panel-info')
     }
   };
   let calc = null; // calculator chrome (case bar, side switch, views host, live panel)
@@ -452,15 +464,20 @@
 
   const TABS = [
     { id: 'calculator', hash: 'calculator', icon: 'calculator' },
-    { id: 'measure', hash: 'how-to-measure', icon: 'ruler' },
-    { id: 'evidence', hash: 'evidence', icon: 'book' },
-    { id: 'about', hash: 'about', icon: 'quote' }
+    { id: 'info', hash: 'evidence-and-about', icon: 'book' }
   ];
+  // Older links keep working: #how-to-measure opens the guide, #evidence and #about open the info tab.
+  const LEGACY_HASH = { 'how-to-measure': 'calculator', evidence: 'info', about: 'info' };
 
   function tabFromHash() {
     const hash = (window.location.hash || '').replace('#', '');
     const tab = TABS.find((t) => t.hash === hash);
-    return tab ? tab.id : null;
+    return tab ? tab.id : (LEGACY_HASH[hash] || null);
+  }
+
+  function openGuide() {
+    const d = byId('guide');
+    if (typeof d.showModal === 'function') { if (!d.open) d.showModal(); } else d.setAttribute('open', '');
   }
 
   function buildTabs() {
@@ -764,7 +781,7 @@
     const c = 2 * Math.PI * r;
     const failed = ev.status === 'failed';
     const done = ev.status === 'complete';
-    const frac = failed ? 1 : stepStatuses(side, ev).completed / 5;
+    const frac = failed ? 1 : stepStatuses(side, ev).completed / STEP_COUNT;
     const el = s('svg', { viewBox: '0 0 44 44', class: 'ring' + (size ? ' ring-' + size : '') + (failed ? ' is-failed' : '') + (done ? ' is-done' : ''), 'aria-hidden': 'true' },
       s('circle', { cx: 22, cy: 22, r, class: 'ring-track' }),
       s('circle', { cx: 22, cy: 22, r, class: 'ring-bar', 'stroke-dasharray': c.toFixed(2), 'stroke-dashoffset': (c * (1 - frac)).toFixed(2), transform: 'rotate(-90 22 22)' }));
@@ -870,7 +887,7 @@
     /* ---- Stepper ---- */
     const stepButtons = [];
     const stepper = h('nav', { class: 'stepper', 'aria-label': 'Calculator steps' },
-      h('ol', { class: 'stepper-list' }, FW.steps.map((title, i) => {
+      h('ol', { class: 'stepper-list' }, FW.pages.map((title, i) => {
         const btn = h('button', { type: 'button', class: 'stepper-btn', on: { click: () => goStep(idx, i + 1) } },
           h('span', { class: 'stepper-dot' },
             h('span', { class: 'stepper-num' }, String(i + 1)),
@@ -886,27 +903,18 @@
     const caption = h('p', { class: 'stepper-caption', 'aria-hidden': 'true' });
     root.append(stepper, progress, caption);
 
-    /* ---- Step shell ---- */
+    /* ---- Section block (two blocks per page) ---- */
     function shell(n, title, subtitle, body, cfg) {
       cfg = cfg || {};
-      const headingId = pid + '-step' + n + '-title';
-      const heading = h('h2', { id: headingId, class: 'step-title', tabindex: '-1' }, title);
-      const sideBadge = state.bilateral ? h('span', { class: 'side-badge' }, icon('layers'), FW.sideLong[S().side]) : null;
-      const back = n > 1
-        ? h('button', { type: 'button', class: 'btn btn-secondary', on: { click: () => goStep(idx, n - 1) } }, icon('chevron-left'), 'Back')
-        : h('span', { class: 'nav-spacer' });
-      const next = cfg.noNext ? null : h('button', { type: 'button', class: 'btn btn-primary btn-next', on: { click: () => goNext(idx) } },
-        h('span', null, cfg.nextLabel || 'Next: ' + FW.steps[n]), icon('chevron-right'));
-      const el = h('section', { class: 'step card', 'aria-labelledby': headingId, 'data-step': String(n), hidden: true },
-        h('header', { class: 'step-head' },
-          h('span', { class: 'step-badge', 'aria-hidden': 'true' }, String(n)),
-          h('div', { class: 'step-headings' },
-            h('p', { class: 'step-kicker' }, 'Step ' + n + ' of ' + STEP_COUNT, sideBadge),
-            h('div', { class: 'step-title-row' }, heading, cfg.tip ? tip(cfg.tip, 'About this step').el : null),
-            subtitle ? h('p', { class: 'step-sub' }, subtitle) : null)),
+      const headingId = pid + '-sec' + n + '-title';
+      const heading = h('h3', { id: headingId, class: 'block-title', tabindex: '-1' }, title);
+      const el = h('section', { class: 'block', 'aria-labelledby': headingId, 'data-section': String(n) },
+        h('header', { class: 'block-head' },
+          h('div', { class: 'step-title-row' }, heading, cfg.tip ? tip(cfg.tip, 'About this section').el : null, cfg.headExtra || null),
+          subtitle ? h('p', { class: 'step-sub' }, subtitle) : null),
         h('div', { class: 'step-body' }, body),
-        h('div', { class: 'step-nav' }, back, cfg.extra || null, next));
-      return { el, heading, next };
+        cfg.extra ? h('div', { class: 'block-actions' }, cfg.extra) : null);
+      return { el, heading };
     }
 
     /* ---- Step 1: Gate 1 ---- */
@@ -925,7 +933,7 @@
         onChange: (v) => { S().gate1[item.id] = v; changed(); }
       }));
       const status = h('div', { class: 'gate-status' });
-      const docBtn = h('button', { type: 'button', class: 'btn btn-primary', hidden: true, on: { click: () => goStep(idx, 6) } },
+      const docBtn = h('button', { type: 'button', class: 'btn btn-primary', hidden: true, on: { click: () => goStep(idx, 3) } },
         h('span', null, 'Document this outcome'), icon('chevron-right'));
       const sh = shell(1, FW.gate1.title, null,
         [sideGroup ? sideGroup.el : null, h('div', { class: 'gate-list' }, gates.map((g) => g.el)), status],
@@ -967,7 +975,6 @@
             g.setError(showError(side, 1, 'gate1.' + id) ? errs['gate1.' + id] : null);
           });
           renderOnce(status, ev.gate, () => statusContent(ev));
-          sh.next.hidden = ev.gate === 'failed';
           docBtn.hidden = !(ev.gate === 'failed' && ev.reachable[5]);
         }
       };
@@ -1026,7 +1033,11 @@
         h('div', { class: 'split' },
           h('div', { class: 'stack' }, fA.el, para.el, fC.el, f3.el, rel.el, meth.el),
           h('div', { class: 'split-aside' }, calcCard))
-      ], { tip: C.help });
+      ], {
+        tip: C.help,
+        headExtra: h('button', { type: 'button', class: 'guide-btn', 'aria-haspopup': 'dialog', on: { click: openGuide } },
+          icon('ruler'), FW.measure.title)
+      });
 
       return {
         el: sh.el, heading: sh.heading,
@@ -1145,7 +1156,7 @@
           renderOnce(courseNote, [ev.courseAuto, side.m.paramuscular, ev.values && ev.values.aTenths], () => {
             if (!ev.courseAuto) return null;
             const from = side.m.paramuscular ? FW.ct.paramuscular.label : 'A = ' + L.formatCm(ev.values.aTenths) + ' cm';
-            return [icon('arrow', 'inline-icon'), 'Auto-filled from Step 2: ' + from + ' → ', chip('cx', ev.courseAuto, 'chip-sm')];
+            return [icon('arrow', 'inline-icon'), 'Auto-filled from the CT measurements: ' + from + ' → ', chip('cx', ev.courseAuto, 'chip-sm')];
           });
           courseReset.hidden = ev.courseSource !== 'overridden';
           ['low', 'moderate', 'high'].forEach((k) => course.option(k).classList.toggle('is-auto', k === ev.courseAuto));
@@ -1401,7 +1412,7 @@
         el: sh.el, heading: sh.heading,
         firstError() { return null; },
         update() {
-          if (S().ui.step !== 6) return;
+          if (S().ui.step !== 3) return;
           const evs = state.sides.map(evalSide);
           const ready = evs.every((e) => e.exportable);
           [printBtn, copyBtn, csvBtn].forEach((b) => { b.disabled = !ready; });
@@ -1411,32 +1422,61 @@
       };
     }
 
-    const steps = [step1(), step2(), step3(), step4(), step5(), step6()];
-    steps.forEach((st) => root.append(st.el));
+    const blocks = [step1(), step2(), step3(), step4(), step5(), step6()];
+
+    /* ---- Pages: two sections each, one Back/Next bar ---- */
+    const pages = FW.pages.map((title, i) => {
+      const k = i + 1;
+      const headingId = pid + '-page' + k + '-title';
+      const heading = h('h2', { id: headingId, class: 'step-title', tabindex: '-1' }, title);
+      const sideBadge = state.bilateral ? h('span', { class: 'side-badge' }, icon('layers'), FW.sideLong[S().side]) : null;
+      const back = k > 1
+        ? h('button', { type: 'button', class: 'btn btn-secondary', on: { click: () => goStep(idx, k - 1) } }, icon('chevron-left'), 'Back')
+        : h('span', { class: 'nav-spacer' });
+      const next = k < STEP_COUNT
+        ? h('button', { type: 'button', class: 'btn btn-primary btn-next', on: { click: () => goNext(idx) } },
+          h('span', null, 'Next: ' + FW.pages[k]), icon('chevron-right'))
+        : null;
+      const secs = PAGE_SECTIONS[i].map((n) => blocks[n - 1]);
+      const el = h('section', { class: 'step card page-' + k, 'aria-labelledby': headingId, 'data-page': String(k), hidden: true },
+        h('header', { class: 'step-head' },
+          h('span', { class: 'step-badge', 'aria-hidden': 'true' }, String(k)),
+          h('div', { class: 'step-headings' },
+            h('p', { class: 'step-kicker' }, 'Step ' + k + ' of ' + STEP_COUNT, sideBadge),
+            heading)),
+        h('div', { class: 'page-body page-body-' + k }, secs.map((b) => b.el)),
+        h('div', { class: 'step-nav' }, back, next));
+      return { el, heading, next, secs };
+    });
+    pages.forEach((pg) => root.append(pg.el));
 
     function update(ev, o) {
       const side = S();
-      if (!ev.reachable[side.ui.step - 1]) {
-        let n = side.ui.step;
-        while (n > 1 && !ev.reachable[n - 1]) n--;
-        side.ui.step = n;
+      if (!pageReachable(ev, side.ui.step)) {
+        let k = side.ui.step;
+        while (k > 1 && !pageReachable(ev, k)) k--;
+        side.ui.step = k;
       }
       const current = side.ui.step;
-      steps.forEach((st, i) => {
+      pages.forEach((pg, i) => {
         const show = i + 1 === current;
-        if (st.el.hidden === show) {
-          st.el.hidden = !show;
-          if (show) st.el.classList.add('is-entering');
+        if (pg.el.hidden === show) {
+          pg.el.hidden = !show;
+          if (show) pg.el.classList.add('is-entering');
         }
       });
+      const failed = ev.gate === 'failed';
+      blocks[1].el.hidden = failed; // CT measurements
+      blocks[4].el.hidden = failed; // integrated plan
+      pages[0].next.hidden = failed;
       const prog = stepStatuses(side, ev);
       stepButtons.forEach((btn, i) => {
-        const n = i + 1;
+        const k = i + 1;
         const status = prog.statuses[i];
         btn.dataset.status = status;
-        btn.classList.toggle('is-current', n === current);
+        btn.classList.toggle('is-current', k === current);
         btn.disabled = status === 'locked';
-        if (n === current) btn.setAttribute('aria-current', 'step');
+        if (k === current) btn.setAttribute('aria-current', 'step');
         else btn.removeAttribute('aria-current');
         btn.querySelector('.stepper-status').textContent = ', ' + {
           done: 'completed', warn: 'completed, flap safety not confirmed', open: 'available',
@@ -1444,25 +1484,26 @@
         }[status];
         btn.parentNode.classList.toggle('is-done', status === 'done' || status === 'warn');
       });
-      const pct = ev.status === 'failed' ? 100 : (prog.completed / 5) * 100;
+      const pct = failed ? 100 : (prog.completed / STEP_COUNT) * 100;
       const fill = progress.firstChild;
       fill.style.width = pct + '%';
-      progress.classList.toggle('is-failed', ev.status === 'failed');
-      caption.textContent = 'Step ' + current + ' of ' + STEP_COUNT + ' · ' + FW.steps[current - 1];
-      steps.forEach((st) => st.update(ev, o));
+      progress.classList.toggle('is-failed', failed);
+      caption.textContent = 'Step ' + current + ' of ' + STEP_COUNT + ' · ' + FW.pages[current - 1];
+      blocks.forEach((st) => st.update(ev, o));
     }
 
     return {
       root,
       update,
-      focusStep(n) {
-        const st = steps[n - 1];
-        st.heading.focus({ preventScroll: true });
+      focusStep(k) {
+        pages[k - 1].heading.focus({ preventScroll: true });
         const top = root.getBoundingClientRect().top;
         if (top < 0 || top > window.innerHeight * 0.6) root.scrollIntoView({ behavior: scrollBehavior(), block: 'start' });
       },
-      focusFirstError(n) {
-        const target = steps[n - 1].firstError();
+      focusFirstError(k) {
+        const ev = evalSide(S());
+        const n = PAGE_SECTIONS[k - 1].find((sec) => sec <= 5 && !ev.steps[sec - 1].valid);
+        const target = n ? blocks[n - 1].firstError() : null;
         if (target && target.focus) target.focus();
         const el = document.activeElement;
         if (el && el.scrollIntoView) el.scrollIntoView({ behavior: scrollBehavior(), block: 'center' });
@@ -1503,8 +1544,8 @@
         h('p', { class: 'sum-incomplete' }, 'This side is not finished yet.'),
         forPrint ? null : h('button', {
           type: 'button', class: 'btn btn-secondary btn-sm',
-          on: { click: () => { setActive(idx); goStep(idx, ev.firstIncompleteStep); } }
-        }, 'Continue at Step ' + ev.firstIncompleteStep, icon('chevron-right')));
+          on: { click: () => { setActive(idx); goStep(idx, sectionPage(ev.firstIncompleteStep)); } }
+        }, 'Continue at Step ' + sectionPage(ev.firstIncompleteStep), icon('chevron-right')));
     }
     if (ev.status === 'failed') {
       return h('article', { class: 'sum-card is-failed' }, head, gate,
@@ -1650,7 +1691,7 @@
     const stepNow = side.ui.step;
     const status = ev.status === 'failed' ? 'Gate 1 failed'
       : ev.status === 'complete' ? 'All inputs complete'
-        : 'Step ' + stepNow + ' of ' + STEP_COUNT + ' · ' + FW.steps[stepNow - 1];
+        : 'Step ' + stepNow + ' of ' + STEP_COUNT + ' · ' + FW.pages[stepNow - 1];
     const headInner = [ring(side, ev), h('span', { class: 'pside-text' },
       h('span', { class: 'pside-name' }, sideName(side)),
       h('span', { class: 'pside-status' }, status))];
@@ -1794,30 +1835,30 @@
     refresh();
   }
 
-  function goStep(idx, n) {
+  function goStep(idx, k) {
     const side = state.sides[idx];
     const ev = evalSide(side);
-    if (!ev.reachable[n - 1]) return;
-    side.ui.step = n;
-    side.ui.maxStep = Math.max(side.ui.maxStep, n);
+    if (!pageReachable(ev, k)) return;
+    side.ui.step = k;
+    side.ui.maxStep = Math.max(side.ui.maxStep, k);
     refresh();
-    views[idx].focusStep(n);
+    views[idx].focusStep(k);
   }
 
   function goNext(idx) {
     const side = state.sides[idx];
     const ev = evalSide(side);
-    const n = side.ui.step;
-    const info = ev.steps[n - 1];
-    if (!info.valid) {
-      side.ui.attempted[n] = true;
+    const k = side.ui.step;
+    const invalid = PAGE_SECTIONS[k - 1].filter((n) => n <= 5 && !ev.steps[n - 1].valid);
+    if (invalid.length) {
+      invalid.forEach((n) => { side.ui.attempted[n] = true; });
       refresh();
-      const count = Object.keys(info.errors).length;
+      const count = invalid.reduce((sum, n) => sum + Object.keys(ev.steps[n - 1].errors).length, 0);
       announce(count === 1 ? 'One item needs attention.' : count + ' items need attention.');
-      views[idx].focusFirstError(n);
+      views[idx].focusFirstError(k);
       return;
     }
-    goStep(idx, n + 1);
+    goStep(idx, k + 1);
   }
 
   /* ======================================================================= */
@@ -1900,7 +1941,7 @@
     });
     state.sides.forEach((side) => {
       const ev = evalSide(side);
-      side.ui.step = ev.reachable[4] ? 5 : ev.firstIncompleteStep;
+      side.ui.step = ev.reachable[4] ? 3 : sectionPage(ev.firstIncompleteStep);
       side.ui.maxStep = side.ui.step;
     });
     rebuildViews();
@@ -1975,8 +2016,9 @@
 
   function renderMeasure() {
     const M = FW.measure;
-    els.panels.measure.append(h('div', { class: 'wrap info' },
-      pageHead('ruler', M.title, M.intro),
+    byId('guide-title').textContent = M.title;
+    byId('guide-intro').textContent = M.intro;
+    byId('guide-body').append(h('div', { class: 'guide-content' },
       h('div', { class: 'measure-grid' },
         h('figure', { class: 'card schematic' },
           h('div', { class: 'schematic-scroll', tabindex: '0', role: 'group', 'aria-label': 'Schematic; scrolls sideways on small screens' },
@@ -2040,7 +2082,7 @@
     const E = FW.evidence;
     const F = E.figures;
     const T = E.cardTitles;
-    els.panels.evidence.append(h('div', { class: 'wrap info' },
+    els.panels.info.append(h('div', { class: 'wrap info' },
       pageHead('book', E.title, E.intro),
       h('section', { class: 'card pad ev-hero' },
         h('h3', { class: 'card-title' }, T.review),
@@ -2071,7 +2113,7 @@
       on: { click: async () => { toast(await copyText(citation) ? 'Citation copied' : 'Select the citation text to copy it'); } }
     }, icon('copy'), 'Copy citation');
     const lic = FW.meta.license;
-    els.panels.about.append(h('div', { class: 'wrap info' },
+    els.panels.info.append(h('div', { class: 'wrap info info-about' },
       pageHead('quote', A.title, null),
       h('div', { class: 'about-grid' },
         h('section', { class: 'card pad about-lead' },
@@ -2125,8 +2167,12 @@
     renderAbout();
     rebuildViews();
     selectTab(tabFromHash() || 'calculator', false);
+    if (window.location.hash === '#how-to-measure') openGuide();
+    byId('guide-close').addEventListener('click', () => byId('guide').close());
+    byId('guide').addEventListener('click', (e) => { if (e.target === byId('guide')) byId('guide').close(); });
 
     const onHash = () => {
+      if (window.location.hash === '#how-to-measure') openGuide();
       const t = tabFromHash();
       if (t && t !== state.tab) {
         selectTab(t, false);

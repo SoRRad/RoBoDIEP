@@ -27,15 +27,14 @@ The surgeon's own selection is always the final plan.
 
 ## How to use
 
-1. **Calculator tab.** Optionally add a *Case label*; do not enter patient identifiers. Tick **Assess both sides** to grade each hemiabdomen separately.
-2. **Step 1, Gate 1: flap safety (hard stop).** Answer the three items:
-   - Any **No** stops that side. You see the reassess message, and no grades or plan are shown.
-   - Any **Uncertain** lets you continue, but the suggestion becomes *Additional assessment needed*.
-3. **Step 2, CT measurements.** Enter A, C, the optional 3D length, and the arcuate-line relation and method. B = C − A and B/C are calculated live.
-4. **Step 3, Technical complexity.** Grade configuration, intramuscular course and access separately, and record team experience. The course grade is auto-filled from A, and you can override it.
-5. **Step 4, Expected benefit.** A grade is pre-selected from B/C using example cutoffs. Override it if your assessment differs.
-6. **Step 5, Integrated plan.** Review the **Suggestion (unvalidated)**, why it was made, and how the rules matched. Then choose your plan, the principal limiting factor and a rationale. The rationale is required when your plan differs from the suggestion.
-7. **Step 6, Summary and export.** Print or save as PDF (one page per side), copy a structured note, download a CSV, or start a new case.
+The site has two tabs: **Calculator** and **Evidence & About**. The calculator has three steps.
+
+1. **Case setup.** Optionally add a *Case label*; do not enter patient identifiers. Tick **Assess both sides** to grade each hemiabdomen separately.
+2. **Step 1, Flap safety & CT measurements.**
+   - Answer the three Gate 1 items. Any **No** stops that side: the CT section is hidden, and no grades or plan are shown. Any **Uncertain** lets you continue, but the suggestion becomes *Additional assessment needed*.
+   - Enter A, C, the optional 3D length, and the arcuate-line relation and method. B = C − A and B/C are calculated live. The **How to measure** button opens the measuring guide beside the inputs.
+3. **Step 2, Complexity & expected benefit.** Grade configuration, intramuscular course and access, and record team experience. The course grade is auto-filled from A. The expected-benefit grade is pre-selected from B/C using example cutoffs. Override either if your assessment differs.
+4. **Step 3, Plan & summary.** Review the **Suggestion (unvalidated)**, why it was made, and how the rules matched. Choose your plan, the principal limiting factor and a rationale; the rationale is required when your plan differs from the suggestion. The summary sits on the same page, with print or save as PDF (one page per side), copy note and CSV download.
 
 The **Try an example** menu loads fictional teaching cases.
 

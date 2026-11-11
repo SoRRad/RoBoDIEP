@@ -78,10 +78,16 @@ const FRAMEWORK = {
 
   tabs: {
     calculator: 'Calculator',
-    measure: 'How to measure',
-    evidence: 'Evidence',
-    about: 'About'
+    info: 'Evidence & About'
   },
+
+  // The calculator shows three pages; each holds two of the sections below.
+  pages: [
+    'Flap safety & CT measurements',
+    'Complexity & expected benefit',
+    'Plan & summary'
+  ],
+
 
   steps: [
     'Flap safety',
