@@ -2,7 +2,7 @@
 
 [![Tests](https://github.com/SoRRad/RoBoDIEP/actions/workflows/test.yml/badge.svg)](https://github.com/SoRRad/RoBoDIEP/actions/workflows/test.yml)
 
-An interactive, browser-only research and educational tool. It walks through the patient-selection framework for robotic-assisted DIEP flap harvest proposed in the systematic review cited below. The steps are:
+An interactive, browser-only research and educational tool. It walks through the patient-selection framework for robotic-assisted DIEP flap harvest developed from a systematic review by the authors (manuscript in preparation). The steps are:
 
 1. A flap-safety gate.
 2. CT angiography measurements.
@@ -169,7 +169,7 @@ The empty `.nojekyll` file tells Pages to serve the files as they are.
 4. If you changed wording on purpose, update the matching expected strings in `tests/logic.test.mjs`.
 5. Run `node --test`.
 
-When the article is published, fill in `citation.yearVolumeArticle` and `citation.doi` in `framework.js`, and update `preferred-citation` in `CITATION.cff`.
+The article citation is hidden while the manuscript is under internal review. When it can be cited, fill in the `citation` fields in `framework.js` and set `citation.show` to `true`; this brings back the "How to cite" card, the footer link and the citation line on printed pages. Add a matching `preferred-citation` to `CITATION.cff`.
 
 ## Project structure
 
@@ -192,12 +192,6 @@ tests/logic.test.mjs          unit tests (node:test)
 - **Contrast:** WCAG 2.1 AA, checked with axe-core in light and dark themes.
 - **Not colour alone:** every grade shows its word and an icon.
 - **System settings:** the page follows the system's light or dark setting and its reduced-motion preference.
-
-## Cite
-
-Shahriarirad R, Vijayasekaran A. Patient Selection for Robotic-Assisted DIEP Flap Harvest Using Preoperative CT Angiography: A Systematic Review With Exploratory Meta-analysis and a Proposed Selection Framework. Plast Reconstr Surg Glob Open. Publication pending.
-
-`CITATION.cff` provides machine-readable metadata, and GitHub shows it as "Cite this repository".
 
 ## License
 

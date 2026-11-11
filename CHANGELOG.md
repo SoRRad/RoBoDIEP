@@ -6,6 +6,7 @@ All notable changes are recorded here. The version matches `version` in `assets/
 
 ### Changed
 
+- **Citation hidden:** the manuscript is still under internal review, so the "How to cite" card, footer link, printed citation line and the article details in `CITATION.cff` are removed, and the tab is renamed *About*. Set `citation.show` in `framework.js` to restore them later.
 - **Design refresh:** Inter typeface (bundled, no external requests), a calmer type scale, a clean white header with underlined tabs, and dividers instead of nested boxes.
 - **(?) tips:** help text and notes now sit behind a (?) that opens on hover, keyboard focus or tap. Grade descriptors, the disclaimer, the Gate 1 stop message, every "Suggestion (unvalidated)" label and the intraoperative override stay visible.
 - **Phones:** Back and Next stay in reach at the bottom of the screen.

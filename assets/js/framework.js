@@ -47,16 +47,17 @@ const FRAMEWORK = {
     }
   },
 
-  // Citation of the source article. When it is published, fill in
-  // `yearVolumeArticle` (e.g. '2027;15(1):e1234') and `doi`
-  // (e.g. '10.1097/GOX.0000000000001234'); the "pending" text then disappears.
+  // Citation of the source article. Hidden while the manuscript is under
+  // internal review (not yet submitted). When it can be cited, fill in the
+  // fields (e.g. title, journal, '2027;15(1):e1234', DOI) and set `show: true`
+  // to bring back the "How to cite" card, footer link and print line.
   citation: {
+    show: false,
     authors: 'Shahriarirad R, Vijayasekaran A',
-    title: 'Patient Selection for Robotic-Assisted DIEP Flap Harvest Using Preoperative CT Angiography: A Systematic Review With Exploratory Meta-analysis and a Proposed Selection Framework',
-    journal: 'Plast Reconstr Surg Glob Open',
+    title: '',
+    journal: '',
     yearVolumeArticle: '',
-    doi: '',
-    pendingText: 'Publication pending.'
+    doi: ''
   },
 
   disclaimer: 'Research and educational tool. Not a medical device. Not validated for clinical decision-making. Does not replace surgical judgment. Intraoperative findings always take precedence.',
@@ -79,7 +80,7 @@ const FRAMEWORK = {
     calculator: 'Calculator',
     measure: 'How to measure',
     evidence: 'Evidence',
-    about: 'About & cite'
+    about: 'About'
   },
 
   steps: [
@@ -418,9 +419,9 @@ const FRAMEWORK = {
     }
   },
 
-  // "About & cite" tab
+  // "About" tab
   about: {
-    title: 'About & cite',
+    title: 'About',
     cardTitles: {
       purpose: 'About this tool',
       disclaimer: 'Disclaimer',
@@ -430,7 +431,7 @@ const FRAMEWORK = {
       version: 'Version and license',
       feedback: 'Feedback'
     },
-    purpose: 'This calculator is an interactive, research-use version of the patient-selection framework proposed in the systematic review cited below. It walks through a flap-safety gate, CT angiography measurements, separately graded technical complexity and expected benefit, and an integrated plan. The suggested plan is unvalidated and is shown to support documentation and prospective evaluation only.',
+    purpose: 'This calculator is an interactive, research-use version of the patient-selection framework for robotic-assisted DIEP flap harvest, developed from a systematic review by the authors. It walks through a flap-safety gate, CT angiography measurements, separately graded technical complexity and expected benefit, and an integrated plan. The suggested plan is unvalidated and is shown to support documentation and prospective evaluation only.',
     privacyDetails: [
       'There are no fields for names, record numbers, dates of birth or dates of service. Do not enter patient identifiers in the case label or the rationale.',
       'No cookies, analytics, tracking or external requests. Reloading or closing the page clears the case.',
