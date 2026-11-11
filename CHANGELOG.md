@@ -9,6 +9,7 @@ All notable changes are recorded here. The version matches `version` in `assets/
 - **Design refresh:** Inter typeface (bundled, no external requests), a calmer type scale, a clean white header with underlined tabs, and dividers instead of nested boxes.
 - **(?) tips:** help text and notes now sit behind a (?) that opens on hover, keyboard focus or tap. Grade descriptors, the disclaimer, the Gate 1 stop message, every "Suggestion (unvalidated)" label and the intraoperative override stay visible.
 - **Phones:** Back and Next stay in reach at the bottom of the screen.
+- **Mayo Clinic theme:** official Mayo Clinic logo in the header, footer and printed pages (white version in dark mode), Mayo blue (#0067B1), a branded band carrying the disclaimer, and Source Serif 4 headings echoing the wordmark. The logo is a trademark used with permission and is excluded from the repository licenses.
 
 ## [1.0.1] – 2026-11-10
 

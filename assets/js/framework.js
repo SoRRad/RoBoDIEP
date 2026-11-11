@@ -29,6 +29,9 @@ const FRAMEWORK = {
   meta: {
     toolName: 'Robotic DIEP Selection Calculator',
     wordmark: 'RoBoDIEP',
+    organization: 'Mayo Clinic',
+    tagline: 'Patient selection for robotic-assisted DIEP flap harvest',
+    trademark: 'Mayo Clinic and the triple-shield logo are trademarks of Mayo Foundation for Medical Education and Research, used with permission. They are not covered by the licenses of this repository.',
     authors: ['Reza Shahriarirad', 'Aparna Vijayasekaran'],
     // Optional: add affiliations in author order, e.g. ['University A', 'Hospital B'].
     affiliations: [],
